@@ -1,0 +1,27 @@
+class AssetPath {
+  static const String basePath = 'assets/';
+  static const String googleLogo = 'assets/google.png';
+  static const String varifyLogo = 'assets/varify.png';
+  static const String varifyLogo1 = 'assets/varify1.png';
+  static const String varifyLogo2 = 'assets/varify2.png';
+  static const String varifyLogo3 = 'assets/varity3.png';
+  static const String playIcon = 'assets/playIcon.png';
+  static const String profile = 'assets/profile.png';
+  static const String chartIcon = 'assets/chartIcon.png';
+  static const String bookOpen = 'assets/book_open.png';
+  static const String timer = 'assets/timer.png';
+  static const String user = 'assets/user_round.png';
+  static const String circle = 'assets/Circle.png';
+  static const String clock = 'assets/clock.png';
+  static const String fire = 'assets/fire.png';
+  static const String target= 'assets/target.png';
+  static const String cicle2= 'assets/cycal2.png';
+  static const String moonIcon= 'assets/moonIcon.png';
+  static const String starIcon= 'assets/star.png';
+  static const String analysis= 'assets/analysis.png';
+  static const String node = 'assets/node.png';
+  static const String targetIcon = 'assets/targetIcon.png';
+  static const String booking = 'assets/booking.png';
+  static const String profilePhoto = 'assets/profilePhoto.png';
+  static const String wineIcon = 'assets/wine.png';
+}
