@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "729040508583",
+    "project_id": "pauseapp-27920",
+    "storage_bucket": "pauseapp-27920.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:729040508583:android:1851f9c96f31ca55986d82",
+        "android_client_info": {
+          "package_name": "com.example.joedaniels85_timer_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBZ0rNQWzITmJw9-Z3jbv5izyws7Xkqy2k"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

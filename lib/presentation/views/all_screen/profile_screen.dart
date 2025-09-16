@@ -66,7 +66,6 @@ class ProfileScreen extends StatelessWidget {
       ),
     );
   }
-
 Widget _buildCard(BuildContext context , String text , String subText ) {
     return Card(
       elevation: 0,
@@ -87,7 +86,6 @@ Widget _buildCard(BuildContext context , String text , String subText ) {
       ),
     );
   }
-
   Widget _statusProfile(BuildContext context) {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 8, vertical: 10),
