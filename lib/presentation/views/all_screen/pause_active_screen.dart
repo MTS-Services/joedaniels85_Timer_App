@@ -58,6 +58,12 @@ class _PauseActiveScreenState extends State<PauseActiveScreen>
     super.dispose();
   }
 
+  String getRemainingMinutes() {
+    // প্রতি মিনিট increment দেখানোর জন্য
+    final minutes = (timerController.remainingSeconds.value / 60).ceil();
+    return minutes.toString();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -80,7 +86,7 @@ class _PauseActiveScreenState extends State<PauseActiveScreen>
             ),
             Obx(
                   () => Text(
-                "Your Pause\n${(timerController.remainingSeconds.value ~/ 60)} min left",
+                "Your Pause\n${getRemainingMinutes()} min left",
                 style: TextStyle(
                   color: Colors.white,
                   fontSize: 18.sp,

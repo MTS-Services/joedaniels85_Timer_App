@@ -63,6 +63,8 @@ class DefaultFirebaseOptions {
     messagingSenderId: '729040508583',
     projectId: 'pauseapp-27920',
     storageBucket: 'pauseapp-27920.firebasestorage.app',
+    androidClientId: '729040508583-93g3uugqe252f14lns8q17nm63vkn8c3.apps.googleusercontent.com',
+    iosClientId: '729040508583-43rva0mdnhm285mi4rt2a5is9eblpos3.apps.googleusercontent.com',
     iosBundleId: 'com.example.joedaniels85TimerApp',
   );
 

@@ -17,12 +17,6 @@ class PauseFeedbackScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    ever(timerController.remainingSeconds, (int minutes) {
-      controller.autoSelectFeedback(minutes);
-    });
-
-    controller.autoSelectFeedback(timerController.remainingSeconds.value);
-
     return Scaffold(
       appBar: CustomAppBar(
         title: "Hi Joe",
@@ -106,7 +100,13 @@ class PauseFeedbackScreen extends StatelessWidget {
 
           return GestureDetector(
             onTap: () {
+              // User selects feedback
               controller.selectedIndex.value = index;
+
+              // Navigate to TimerScreen after 200ms
+              Future.delayed(const Duration(milliseconds: 200), () {
+                Get.offAllNamed(AppRoutes.bottomNavBarScreen);
+              });
             },
             child: Container(
               padding: EdgeInsets.all(10.w),

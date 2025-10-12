@@ -12,7 +12,20 @@
           "package_name": "com.example.joedaniels85_timer_app"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "729040508583-93g3uugqe252f14lns8q17nm63vkn8c3.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.joedaniels85_timer_app",
+            "certificate_hash": "b89103fdaf4491e478f46f4281211e6910b25bc5"
+          }
+        },
+        {
+          "client_id": "729040508583-bdi5i9c83e3kbj17f6qp3ksbf1qqmk53.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyBZ0rNQWzITmJw9-Z3jbv5izyws7Xkqy2k"
@@ -20,7 +33,19 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "729040508583-bdi5i9c83e3kbj17f6qp3ksbf1qqmk53.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "729040508583-43rva0mdnhm285mi4rt2a5is9eblpos3.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.joedaniels85TimerApp"
+              }
+            }
+          ]
         }
       }
     }

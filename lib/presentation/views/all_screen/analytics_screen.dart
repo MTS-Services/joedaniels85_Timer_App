@@ -154,17 +154,13 @@ class AnalyticsScreen extends StatelessWidget {
   /// Total Time + Today %
   Widget _buildRow() {
     return Obx(() {
-      final backendMinutes =
-          progressController
-              .progressResponse
-              .value
-              ?.data
-              ?.overall
-              ?.totalDurationMinutes ??
-          0;
+      // API থেকে আসা total duration ধরে নিই seconds, তাই divide by 60
+      final backendMinutes = ((progressController.progressResponse.value?.data?.overall?.totalDurationMinutes ?? 0) / 60).round();
+
+      // আজকের activities duration add
       final todayMinutes = progressController.todayActivities.fold<int>(
         0,
-        (sum, entry) => sum + (entry.duration ?? 0),
+            (sum, entry) => sum + ((entry.duration ?? 0) / 60).round(),
       );
 
       final totalMinutes = backendMinutes + todayMinutes;
@@ -222,15 +218,16 @@ class AnalyticsScreen extends StatelessWidget {
       );
     });
   }
+
   Widget buildWeeklyMinutesChart(
-    BuildContext context,
-    List<ActivityEntry> entries,
-  ) {
+      BuildContext context,
+      List<ActivityEntry> entries,
+      ) {
     final now = DateTime.now();
     final startOfWeek = now.subtract(Duration(days: now.weekday % 7));
     final last7Days = List.generate(
       7,
-      (i) => startOfWeek.add(Duration(days: i)),
+          (i) => startOfWeek.add(Duration(days: i)),
     );
 
     final dailyMinutes = last7Days.map((day) {
@@ -242,7 +239,7 @@ class AnalyticsScreen extends StatelessWidget {
       });
       final totalMinutes = dailyEntries.fold<double>(
         0,
-        (sum, e) => sum + (e.duration ?? 0),
+            (sum, e) => sum + ((e.duration ?? 0) / 60),
       );
       return totalMinutes.toInt();
     }).toList();
@@ -259,10 +256,10 @@ class AnalyticsScreen extends StatelessWidget {
   Widget _weeklyStatusCard(BuildContext context, List<ActivityEntry> entries) {
     int totalMinutes = entries.fold(
       0,
-      (sum, entry) => sum + (entry.duration ?? 0),
+          (sum, entry) => sum + ((entry.duration ?? 0) / 60).round(),
     );
     bool allSuccess = entries.every(
-      (entry) => entry.status?.toLowerCase() == "success",
+          (entry) => entry.status?.toLowerCase() == "success",
     );
     String status = allSuccess ? "Success" : "Pending";
     Color statusColor = allSuccess ? Colors.green : Colors.orange;
