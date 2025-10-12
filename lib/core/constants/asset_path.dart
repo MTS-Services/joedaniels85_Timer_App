@@ -24,4 +24,8 @@ class AssetPath {
   static const String booking = 'assets/booking.png';
   static const String profilePhoto = 'assets/profilePhoto.png';
   static const String wineIcon = 'assets/wine.png';
+  static const String deleteIcon = 'assets/delete.png';
+  static const String editIcon = 'assets/edit.png';
+  static const String smileIcon = 'assets/smileIcon.png';
+  static const String sleepIcon = 'assets/sleepIcon.png';
 }

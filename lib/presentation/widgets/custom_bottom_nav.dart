@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:joedaniels85_timer_app/core/constants/asset_path.dart';
 
 class CustomBottomNavScreen extends StatelessWidget {
@@ -22,23 +23,43 @@ class CustomBottomNavScreen extends StatelessWidget {
       onTap: onTap,
       items: [
         BottomNavigationBarItem(
-          icon: Image.asset(AssetPath.timer,color: Colors.black , width: 30,),
+          icon: Image.asset(
+            AssetPath.timer,
+            color: currentIndex == 0 ? Colors.black : Colors.grey,
+            width: 25.w,
+          ),
           label: 'Timer',
         ),
         BottomNavigationBarItem(
-          icon: Image.asset(AssetPath.chartIcon ,color: Colors.black, width: 30,),
+          icon: Image.asset(
+            AssetPath.chartIcon,
+            color: currentIndex == 1 ? Colors.black : Colors.grey,
+            width: 25.w,
+          ),
           label: 'Analytics',
         ),
         BottomNavigationBarItem(
-          icon: Image.asset(AssetPath.playIcon, color: Colors.black, width: 30,),
+          icon: Image.asset(
+            AssetPath.playIcon,
+            color: currentIndex == 2 ? Colors.black : Colors.grey,
+            width: 25.w,
+          ),
           label: 'Pause',
         ),
         BottomNavigationBarItem(
-          icon: Image.asset(AssetPath.bookOpen, color: Colors.black, width: 30,),
+          icon: Image.asset(
+            AssetPath.bookOpen,
+            color: currentIndex == 3 ? Colors.black : Colors.grey,
+            width: 25.w,
+          ),
           label: 'Activities',
         ),
         BottomNavigationBarItem(
-          icon:Image.asset(AssetPath.user, color: Colors.black, width: 30,),
+          icon: Image.asset(
+            AssetPath.user,
+            color: currentIndex == 4 ? Colors.black : Colors.grey,
+            width: 25.w,
+          ),
           label: 'Profile',
         ),
       ],

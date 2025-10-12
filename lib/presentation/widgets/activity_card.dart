@@ -1,16 +1,12 @@
 import 'package:flutter/material.dart';
-
-import '../../core/constants/app_colors.dart';
-import '../../core/constants/asset_path.dart';
-
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import '../../core/constants/icons.dart';
 
 class ActivityCard extends StatelessWidget {
   final String title;
   final String description;
   final String duration;
   final String level;
-  final Color avatarColor;
-  final String avatarImage;
 
   const ActivityCard({
     super.key,
@@ -18,46 +14,52 @@ class ActivityCard extends StatelessWidget {
     required this.description,
     required this.duration,
     required this.level,
-    this.avatarColor = AppColors.targetColor,
-    this.avatarImage = AssetPath.booking,
   });
 
   @override
   Widget build(BuildContext context) {
+    // Get style from map
+    final activityStyle = activityMap[title] ??
+        {
+          "icon": Icons.help_outline,
+          "color": Colors.grey,
+        };
+
+    final icon = activityStyle["icon"] as IconData;
+    final color = activityStyle["color"] as Color;
+
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 8 , vertical: 10),
+      padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 10.h),
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
+        padding: EdgeInsets.symmetric(horizontal: 15.w, vertical: 10.h),
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(10),
+          borderRadius: BorderRadius.circular(10.r),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             CircleAvatar(
-              backgroundColor: avatarColor,
-              child: Image.asset(
-                avatarImage,
-                width: 60,
-              ),
+              backgroundColor: color.withOpacity(0.2),
+              radius: 30.r,
+              child: Icon(icon, color: color, size: 28.sp),
             ),
-            const SizedBox(height: 8),
+            SizedBox(height: 8.h),
             Text(
               title,
               style: Theme.of(context)
                   .textTheme
                   .bodyMedium!
-                  .copyWith(fontSize: 20),
+                  .copyWith(fontSize: 20.sp),
             ),
-            const SizedBox(height: 8),
+            SizedBox(height: 8.h),
             Text(
               description,
-              style: Theme.of(context).textTheme.bodySmall,
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(fontSize: 14.sp),
             ),
-            const SizedBox(height: 15),
+            SizedBox(height: 15.h),
             const Divider(),
-            const SizedBox(height: 15),
+            SizedBox(height: 15.h),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -69,28 +71,27 @@ class ActivityCard extends StatelessWidget {
                       style: Theme.of(context)
                           .textTheme
                           .bodyMedium!
-                          .copyWith(fontSize: 15),
+                          .copyWith(fontSize: 15.sp),
                     ),
-                    const SizedBox(height: 15),
+                    SizedBox(height: 15.h),
                     Text(
                       duration,
-                      style: Theme.of(context).textTheme.bodySmall,
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(fontSize: 13.sp),
                     ),
                   ],
                 ),
                 Container(
-                  padding:
-                  const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                  padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 5.h),
                   decoration: BoxDecoration(
-                    color: Colors.red,
-                    borderRadius: BorderRadius.circular(50),
+                    color: difficultyColors[level] ?? Colors.grey,
+                    borderRadius: BorderRadius.circular(50.r),
                   ),
                   child: Text(
                     level,
                     style: Theme.of(context)
                         .textTheme
                         .bodySmall!
-                        .copyWith(color: Colors.white),
+                        .copyWith(color: Colors.white, fontSize: 13.sp),
                   ),
                 ),
               ],

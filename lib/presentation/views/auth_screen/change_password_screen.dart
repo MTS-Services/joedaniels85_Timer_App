@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
-
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:get/get.dart';
+import 'package:joedaniels85_timer_app/presentation/viewmodels/controller/change_password_controller.dart';
+import '../../../routes/app_route.dart';
+import '../../widgets/show_simple_snack_bar.dart';
 
 class ChangePasswordScreen extends StatefulWidget {
   const ChangePasswordScreen({super.key});
@@ -9,8 +13,10 @@ class ChangePasswordScreen extends StatefulWidget {
 }
 
 class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
-  final TextEditingController _passwordController = TextEditingController();
-  final TextEditingController _confirmPasswordController = TextEditingController();
+  final TextEditingController passwordController = TextEditingController();
+  final TextEditingController confirmPasswordController = TextEditingController();
+  final ChangePasswordController controller = Get.put(ChangePasswordController());
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -18,44 +24,67 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
         child: Center(
           child: SingleChildScrollView(
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 15),
+              padding: EdgeInsets.symmetric(horizontal: 15.w, vertical: 15.h),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Text(
                     "Create a new Password ",
-                    style: Theme.of(context).textTheme.bodyMedium,
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      fontSize: 18.sp,
+                    ),
                   ),
+                  SizedBox(height: 8.h),
                   Text(
                     "Your new password must be different from \npreviously used passwords.",
-                    style: Theme.of(context).textTheme.bodySmall,
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      fontSize: 14.sp,
+                    ),
                     textAlign: TextAlign.center,
                   ),
-                  const SizedBox(height: 50),
+                  SizedBox(height: 50.h),
 
+                  // New Password
                   TextFormField(
-                    controller: _passwordController,
-                    decoration: const InputDecoration(hintText: "New Password"),
+                    controller: passwordController,
+                    decoration: InputDecoration(
+                      hintText: "New Password",
+                      contentPadding: EdgeInsets.symmetric(
+                        vertical: 12.h,
+                        horizontal: 12.w,
+                      ),
+                    ),
                   ),
-                  const SizedBox(height: 15),
+                  SizedBox(height: 15.h),
 
+                  // Confirm Password
                   TextFormField(
-                    controller:_confirmPasswordController ,
-                    decoration: const InputDecoration(hintText: "Confirm Password"),
+                    controller: confirmPasswordController,
+                    decoration: InputDecoration(
+                      hintText: "Confirm Password",
+                      contentPadding: EdgeInsets.symmetric(
+                        vertical: 12.h,
+                        horizontal: 12.w,
+                      ),
+                    ),
                     obscureText: true,
                   ),
 
-                  const SizedBox(height: 30),
+                  SizedBox(height: 30.h),
+
                   SizedBox(
                     width: double.infinity,
+                    height: 48.h,
                     child: ElevatedButton(
                       onPressed: () {
-
+                        handleChangePassword(context);
                       },
-                      child: const Text("Reset Password"),
+                      child: Text(
+                        "Reset Password",
+                        style: TextStyle(fontSize: 16.sp),
+                      ),
                     ),
-                  )
-
+                  ),
                 ],
               ),
             ),
@@ -64,10 +93,65 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
       ),
     );
   }
+
+  Future<void> handleChangePassword(BuildContext context) async {
+    final newPassword = passwordController.text.trim();
+    final confirmPassword = confirmPasswordController.text.trim();
+
+    if (newPassword.isEmpty) {
+      showSimpleSnackBar(
+        context,
+        "Password is required",
+        bgColor: Colors.red,
+        textColor: Colors.white,
+      );
+      return;
+    }
+    if (confirmPassword.isEmpty) {
+      showSimpleSnackBar(
+        context,
+        "Confirm password is required",
+        bgColor: Colors.red,
+        textColor: Colors.white,
+      );
+      return;
+    }
+    if (newPassword != confirmPassword) {
+      showSimpleSnackBar(
+        context,
+        "Passwords do not match",
+        bgColor: Colors.red,
+        textColor: Colors.white,
+      );
+      return;
+    }
+
+    final isSuccess = await controller.changePassword(newPassword);
+
+    if (isSuccess) {
+      // Success case
+      showSimpleSnackBar(
+        context,
+        "Password changed successfully!",
+        bgColor: Colors.green,
+        textColor: Colors.white,
+      );
+      Get.offAllNamed(AppRoutes.signInScreen);
+    } else {
+      // Failure case
+      showSimpleSnackBar(
+        context,
+        "Failed to change password",
+        bgColor: Colors.red,
+        textColor: Colors.white,
+      );
+    }
+  }
+
   @override
   void dispose() {
-    _confirmPasswordController.dispose();
-    _passwordController.dispose();
+    confirmPasswordController.dispose();
+    passwordController.dispose();
     super.dispose();
   }
 }

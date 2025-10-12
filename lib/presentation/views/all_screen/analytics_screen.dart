@@ -1,56 +1,148 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/asset_path.dart';
+import '../../../data/models/screenmodel/progress_pesponse_model.dart';
+import '../../viewmodels/controller/achievement_controller.dart';
+import '../../viewmodels/controller/progress_controller.dart';
 import '../../widgets/achievement_card .dart';
 import '../../widgets/start_card.dart';
-import '../../widgets/week_days_selector.dart';
+import '../../widgets/status_card.dart';
 import '../../widgets/weekly_minutes_bar_chart.dart';
 
 class AnalyticsScreen extends StatelessWidget {
-  const AnalyticsScreen({super.key});
+  AnalyticsScreen({super.key});
+
+  final AchievementController achievementController = Get.put(
+    AchievementController(),
+  );
+  final UserProgressController progressController = Get.put(
+    UserProgressController(),
+  );
+
+  void _initialFetch() {
+    progressController.fetchUserProgress();
+    achievementController.fetchActivities();
+  }
 
   @override
   Widget build(BuildContext context) {
+    _initialFetch();
+
     return Scaffold(
       body: SafeArea(
-        child: SingleChildScrollView(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
+        child: RefreshIndicator(
+          onRefresh: () async {
+            await progressController.fetchUserProgress();
+            await achievementController.fetchActivities();
+          },
+          child: SingleChildScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            padding: EdgeInsets.symmetric(horizontal: 15.w, vertical: 10.h),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text("Your Progress"),
-                const SizedBox(height: 10),
+                Text(
+                  "Your Progress",
+                  style: TextStyle(
+                    fontSize: 20.sp,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                SizedBox(height: 10.h),
                 Text(
                   "Last 7 days",
-                  style: Theme.of(context).textTheme.bodySmall,
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodySmall?.copyWith(fontSize: 14.sp),
                 ),
-                const SizedBox(height: 10),
+                SizedBox(height: 10.h),
+
+                /// Total + Today Row
                 _buildRow(),
-                const SizedBox(height: 10),
-                const Text("Your Progress"),
-                const SizedBox(height: 10),
-                WeeklyMinutesBarChart(
-                  minutes: const [12, 10, 15, 20, 26, 36, 45],
-                  barColor: Colors.teal,
-                  backgroundColor: Colors.grey, // or Colors.grey.shade200
+
+                SizedBox(height: 10.h),
+                Text(
+                  "Weekly Progress",
+                  style: TextStyle(
+                    fontSize: 18.sp,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
-                const SizedBox(height: 10),
-                const Text("Your Progress"),
-                const SizedBox(height: 10),
-                WeekDaysSelector(
-                  height: 40,
-                  days: const ["Fri", "Wed", "Sat", "Sun", "Tue", "Mon", "Thu"],
-                  backgroundColor: Colors.teal,
-                  onDaySelected: (day) {
-                    debugPrint("Selected Day: $day");
-                  },
+                SizedBox(height: 10.h),
+
+                Obx(() {
+                  final entries = progressController.todayActivities;
+                  if (entries.isEmpty)
+                    return Text(
+                      "No activities yet",
+                      style: TextStyle(fontSize: 14.sp),
+                    );
+                  return buildWeeklyMinutesChart(context, entries);
+                }),
+
+                SizedBox(height: 15.h),
+                Text(
+                  "Achievements",
+                  style: TextStyle(
+                    fontSize: 18.sp,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
-                _buildGridView(),
-                Text("Achievements"),
-                _statusCard(context),
-                _statusCard(context),
-                _statusCard(context),
+                SizedBox(height: 10.h),
+
+                /// Achievements Grid
+                Obx(() {
+                  if (achievementController.nextAchievements.isEmpty &&
+                      achievementController.unlockedAchievements.isEmpty) {
+                    return Center(
+                      child: Text(
+                        "No achievements found.",
+                        style: TextStyle(fontSize: 14.sp),
+                      ),
+                    );
+                  } else {
+                    final allAchievements = [
+                      ...achievementController.unlockedAchievements,
+                      ...achievementController.nextAchievements,
+                    ];
+
+                    return GridView.builder(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: 2,
+                        mainAxisSpacing: 12.h,
+                        crossAxisSpacing: 12.w,
+                        childAspectRatio: 1.05,
+                      ),
+                      itemCount: allAchievements.length,
+                      itemBuilder: (context, index) {
+                        final achievement = allAchievements[index];
+                        return AchievementCard(
+                          title: achievement.title ?? "",
+                          bgColor: AppColors.targetColor,
+                          imageIcon: AssetPath.targetIcon,
+                          isActive: achievement.completed ?? false,
+                        );
+                      },
+                    );
+                  }
+                }),
+
+                SizedBox(height: 20.h),
+
+                /// Status Card
+                Obx(() {
+                  final entries = progressController.todayActivities;
+                  if (entries.isEmpty)
+                    return Text(
+                      "No activities yet",
+                      style: TextStyle(fontSize: 14.sp),
+                    );
+                  return _weeklyStatusCard(context, entries);
+                }),
               ],
             ),
           ),
@@ -59,115 +151,132 @@ class AnalyticsScreen extends StatelessWidget {
     );
   }
 
-  Widget _statusCard(BuildContext context) {
-    return Card(
-      color: Colors.white,
-      child: ListTile(
-        leading: CircleAvatar(
-          backgroundColor: AppColors.statusColor,
-          child: Icon(Icons.calendar_month_outlined, color: Colors.white),
-        ),
-        title: Text(
-          "sun",
-          style: Theme.of(context).textTheme.bodyMedium!.copyWith(fontSize: 20),
-        ),
-        subtitle: Text("75 min", style: Theme.of(context).textTheme.bodySmall),
-        trailing: Container(
-          height: 30,
-          width: 100,
-          padding: EdgeInsets.all(5),
-          decoration: BoxDecoration(
-            color: Colors.green,
-            borderRadius: BorderRadius.circular(50),
-          ),
-          child: Center(
-            child: Text(
-              "Success",
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 15,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
+  /// Total Time + Today %
   Widget _buildRow() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        StartCard(
-          vPadding: 0,
-          hPadding: 55.0,
-          showButton: false,
-          centerIcon: AssetPath.analysis,
-          size: 60,
-          titleSpans: const [
-            TextSpan(
-              text: "420m",
-              style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
+    return Obx(() {
+      final backendMinutes =
+          progressController
+              .progressResponse
+              .value
+              ?.data
+              ?.overall
+              ?.totalDurationMinutes ??
+          0;
+      final todayMinutes = progressController.todayActivities.fold<int>(
+        0,
+        (sum, entry) => sum + (entry.duration ?? 0),
+      );
+
+      final totalMinutes = backendMinutes + todayMinutes;
+      final totalToday = progressController.todayActivities.length;
+      final completedToday = progressController.todayActivities
+          .where((entry) => entry.status?.toLowerCase() == "success")
+          .length;
+      final todayPercent = totalToday > 0
+          ? ((completedToday / totalToday) * 100).toStringAsFixed(0)
+          : "0";
+
+      return Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Flexible(
+            child: StartCard(
+              vPadding: 0.h,
+              showButton: false,
+              centerIcon: AssetPath.analysis,
+              size: 60.w,
+              titleSpans: [
+                TextSpan(
+                  text: "${totalMinutes}m",
+                  style: TextStyle(fontSize: 28.sp, fontWeight: FontWeight.bold),
+                ),
+                TextSpan(
+                  text: "\nTotal Time",
+                  style: TextStyle(fontSize: 16.sp),
+                ),
+              ],
+              onButtonTap: () {},
             ),
-            TextSpan(text: "\nTotal Time", style: TextStyle(fontSize: 16)),
-          ],
-          onButtonTap: () {},
-        ),
-        const SizedBox(width: 10),
-        StartCard(
-          vPadding: 0,
-          hPadding: 55.0,
-          showButton: false,
-          centerIcon: AssetPath.node,
-          size: 60,
-          titleSpans: const [
-            TextSpan(
-              text: "86%",
-              style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
+          ),
+          SizedBox(width: 10.w),
+          Flexible(
+            child: StartCard(
+              vPadding: 0.h,
+              showButton: false,
+              centerIcon: AssetPath.node,
+              size: 60.w,
+              titleSpans: [
+                TextSpan(
+                  text: "$todayPercent%",
+                  style: TextStyle(fontSize: 28.sp, fontWeight: FontWeight.bold),
+                ),
+                TextSpan(
+                  text: "\nToday",
+                  style: TextStyle(fontSize: 16.sp),
+                ),
+              ],
+              onButtonTap: () {},
             ),
-            TextSpan(text: "\nToday", style: TextStyle(fontSize: 16)),
-          ],
-          onButtonTap: () {},
-        ),
-      ],
+          ),
+        ],
+      );
+    });
+  }
+  Widget buildWeeklyMinutesChart(
+    BuildContext context,
+    List<ActivityEntry> entries,
+  ) {
+    final now = DateTime.now();
+    final startOfWeek = now.subtract(Duration(days: now.weekday % 7));
+    final last7Days = List.generate(
+      7,
+      (i) => startOfWeek.add(Duration(days: i)),
+    );
+
+    final dailyMinutes = last7Days.map((day) {
+      final dailyEntries = entries.where((entry) {
+        final date = entry.startedAt ?? DateTime.now();
+        return date.year == day.year &&
+            date.month == day.month &&
+            date.day == day.day;
+      });
+      final totalMinutes = dailyEntries.fold<double>(
+        0,
+        (sum, e) => sum + (e.duration ?? 0),
+      );
+      return totalMinutes.toInt();
+    }).toList();
+
+    return WeeklyMinutesBarChart(
+      minutes: dailyMinutes,
+      barColor: Colors.teal,
+      backgroundColor: Colors.grey.shade300,
+      barWidth: 15.w,
     );
   }
-  Widget _buildGridView() {
-    return GridView.count(
-      crossAxisCount: 2,
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      padding: const EdgeInsets.symmetric(vertical: 12),
-      mainAxisSpacing: 12,
-      crossAxisSpacing: 12,
-      childAspectRatio: 1.05,
-      children: const [
-        AchievementCard(
-          title: "First Step",
-          subtitle: "Complete your first session",
-          bgColor: AppColors.targetColor,
-          imageIcon: AssetPath.targetIcon,
-          isActive: true,
-        ),
-        AchievementCard(
-          title: "3 Day Streak",
-          subtitle: "3 consecutive days",
-          bgColor: AppColors.targetColor2,
-          imageIcon: AssetPath.targetIcon,
-        ),
-        AchievementCard(
-          title: "Weekly Warrior",
-          subtitle: "7 day in a row",
-          bgColor: AppColors.targetColor3,
-          imageIcon: AssetPath.targetIcon,
-        ),
-        AchievementCard(
-          title: "Marathon Master",
-          subtitle: "5 Hours in one session",
-          bgColor: AppColors.targetColor4,
-          imageIcon: AssetPath.targetIcon,
-        ),
-      ],
+
+  /// Status Card
+  Widget _weeklyStatusCard(BuildContext context, List<ActivityEntry> entries) {
+    int totalMinutes = entries.fold(
+      0,
+      (sum, entry) => sum + (entry.duration ?? 0),
+    );
+    bool allSuccess = entries.every(
+      (entry) => entry.status?.toLowerCase() == "success",
+    );
+    String status = allSuccess ? "Success" : "Pending";
+    Color statusColor = allSuccess ? Colors.green : Colors.orange;
+    String dayName = "";
+    if (entries.isNotEmpty) {
+      DateTime date = entries.first.startedAt ?? DateTime.now();
+      List<String> weekDays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+      dayName = weekDays[date.weekday % 7];
+    }
+    return StatusCard(
+      dayName: dayName,
+      minutes: "$totalMinutes min",
+      status: status,
+      statusColor: statusColor,
     );
   }
 }

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../core/constants/app_colors.dart';
 
 class WeekDaysSelector extends StatelessWidget {
@@ -27,12 +27,12 @@ class WeekDaysSelector extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      height: height,
+      height: height.h,
       child: ListView.separated(
-        padding: const EdgeInsets.symmetric(horizontal: 8),
+        padding: EdgeInsets.symmetric(horizontal: 8.w),
         scrollDirection: Axis.horizontal,
         itemCount: days.length,
-        separatorBuilder: (_, __) => const SizedBox(width: 8),
+        separatorBuilder: (_, __) => SizedBox(width: 8.w),
         itemBuilder: (context, index) {
           return GestureDetector(
             onTap: () {
@@ -41,10 +41,10 @@ class WeekDaysSelector extends StatelessWidget {
               }
             },
             child: Container(
-              width: width,
+              width: width.w,
               decoration: BoxDecoration(
                 color: backgroundColor,
-                borderRadius: BorderRadius.circular(borderRadius),
+                borderRadius: BorderRadius.circular(borderRadius.r),
               ),
               child: Center(
                 child: Text(
@@ -53,7 +53,7 @@ class WeekDaysSelector extends StatelessWidget {
                       TextStyle(
                         color: textColor,
                         fontWeight: FontWeight.w600,
-                        fontSize: 14,
+                        fontSize: 14.sp,
                       ),
                 ),
               ),

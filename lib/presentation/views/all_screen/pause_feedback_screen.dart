@@ -1,12 +1,28 @@
 import 'package:flutter/material.dart';
-import 'package:joedaniels85_timer_app/core/constants/app_colors.dart';
+import 'package:get/get.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:joedaniels85_timer_app/presentation/views/all_screen/analytics_screen.dart';
+import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/asset_path.dart';
+import '../../../routes/app_route.dart';
+import '../../viewmodels/controller/pause_feedback_controller.dart';
+import '../../viewmodels/controller/timer_controller.dart';
 import '../../widgets/custome_app_bar.dart';
-import '../../widgets/task_card.dart';
+
 class PauseFeedbackScreen extends StatelessWidget {
-  const PauseFeedbackScreen({super.key});
+  PauseFeedbackScreen({super.key});
+
+  final PauseFeedbackController controller = Get.put(PauseFeedbackController());
+  final TimerController timerController = Get.put(TimerController());
+
   @override
   Widget build(BuildContext context) {
+    ever(timerController.remainingSeconds, (int minutes) {
+      controller.autoSelectFeedback(minutes);
+    });
+
+    controller.autoSelectFeedback(timerController.remainingSeconds.value);
+
     return Scaffold(
       appBar: CustomAppBar(
         title: "Hi Joe",
@@ -17,90 +33,143 @@ class PauseFeedbackScreen extends StatelessWidget {
         child: Center(
           child: SingleChildScrollView(
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Container(
-                    padding: EdgeInsets.symmetric(horizontal: 10, vertical: 15),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.grey.shade300,
-                          blurRadius: 1,
-                          spreadRadius: 1,
-                          offset: Offset(1, 1),
-                        ),
-                      ],
-                    ),
-                    child: Column(
-                      children: [
-                        Align(
-                          alignment: Alignment.topRight,
-                          child: Container(
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(5),
-                              color: AppColors.iconBg
-                            ),
-                            child: IconButton(
-                              onPressed: () {},
-                              icon: Icon(Icons.close),
-                            ),
+              padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 10.h),
+              child: Obx(() {
+                if (!controller.isVisible.value) return const SizedBox.shrink();
+
+                return Container(
+                  padding: EdgeInsets.all(15.w),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.grey.shade300,
+                        blurRadius: 1.r,
+                        spreadRadius: 1.r,
+                        offset: Offset(1.w, 1.h),
+                      ),
+                    ],
+                  ),
+                  child: Column(
+                    children: [
+                      Align(
+                        alignment: Alignment.topRight,
+                        child: Container(
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(5.r),
+                            color: AppColors.iconBg,
+                          ),
+                          child: IconButton(
+                            onPressed: () {
+                              controller.closeFeedback();
+                              Get.offAllNamed(AppRoutes.bottomNavBarScreen);
+                            },
+                            icon: Icon(Icons.close, size: 20.sp),
                           ),
                         ),
-                        SizedBox(height: 10),
-                        Text(
-                          "How was your Pause?",
-                          style: Theme.of(context).textTheme.bodyMedium,
+                      ),
+                      SizedBox(height: 10.h),
+                      Text(
+                        "How was your Pause?",
+                        style: Theme.of(context).textTheme.bodyMedium!.copyWith(
+                          fontSize: 18.sp,
+                          fontWeight: FontWeight.bold,
                         ),
-                        Text(
-                          "Your feedback helps us understand your digital wellness \njourney",
-                          style: Theme.of(
-                            context,
-                          ).textTheme.bodySmall!.copyWith(fontSize: 14),
-                          textAlign: TextAlign.center,
-                        ),
-                        SizedBox(height: 20),
-                       SizedBox(
-                         height: 300,
-                         child: ListView.builder(
-                           itemCount: 3,
-                           padding: EdgeInsets.symmetric(vertical: 10),
-                           physics: NeverScrollableScrollPhysics(),
-                           shrinkWrap: true,
-                           itemBuilder: (context, index) {
-                           return TaskCard(
-                             cardEle: 2,
-                             title: "Great",
-                             size: 20,
-                             subTitle:"That pause felt refreshing!",
-                             fontWeight: FontWeight.normal,
-                             imagePath: AssetPath.starIcon,
-                             iconColor: Colors.orange,
-                             leadingBgColor: AppColors.iconBg,
-                             actions: [
-                               ActionIcon(
-                                 icon: Icons.check_circle_outline_outlined,
-                                 color: Colors.grey,
-                                 onTap: () {
-                                   print("Checked!");
-                                 },
-                               ),
-                             ],
-                           );
-                         },),
-                       )
-                      ],
-                    ),
+                      ),
+                      Text(
+                        "Your feedback helps us understand your digital wellness \njourney",
+                        style: Theme.of(context)
+                            .textTheme
+                            .bodySmall!
+                            .copyWith(fontSize: 14.sp),
+                        textAlign: TextAlign.center,
+                      ),
+                      SizedBox(height: 20.h),
+                      _buildFeedbackList(),
+                    ],
                   ),
-                ],
-              ),
+                );
+              }),
             ),
           ),
         ),
       ),
     );
+  }
+
+  Widget _buildFeedbackList() {
+    return Obx(() {
+      return Column(
+        children: List.generate(controller.feedbackOptions.length, (index) {
+          final option = controller.feedbackOptions[index];
+          final isSelected = controller.selectedIndex.value == index;
+
+          return GestureDetector(
+            onTap: () {
+              controller.selectedIndex.value = index;
+            },
+            child: Container(
+              padding: EdgeInsets.all(10.w),
+              margin: EdgeInsets.only(bottom: 8.h),
+              decoration: BoxDecoration(
+                color: isSelected ? Colors.green.shade50 : Colors.white,
+                borderRadius: BorderRadius.circular(10.r),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.grey.shade200,
+                    blurRadius: 2.r,
+                    offset: Offset(1.w, 1.h),
+                  ),
+                ],
+              ),
+              child: Row(
+                children: [
+                  Container(
+                    padding: EdgeInsets.all(6.w),
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: AppColors.iconBg,
+                    ),
+                    child: Image.asset(
+                      option['icon']!,
+                      width: 20.w,
+                      height: 20.h,
+                    ),
+                  ),
+                  SizedBox(width: 10.w),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          option['title']!,
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 14.sp,
+                          ),
+                        ),
+                        SizedBox(height: 1.h),
+                        Text(
+                          option['subtitle']!,
+                          style: TextStyle(
+                            fontSize: 12.sp,
+                            color: Colors.grey,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Icon(
+                    Icons.check_circle,
+                    color: isSelected ? Colors.green : Colors.grey,
+                    size: 20.sp,
+                  ),
+                ],
+              ),
+            ),
+          );
+        }),
+      );
+    });
   }
 }

@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class DropPauseIcon extends StatelessWidget {
   final double size;
   final Color color;
   final double pauseBarWidth;
   final double pauseBarHeight;
+
   const DropPauseIcon({
     super.key,
     this.size = 44,
@@ -12,11 +14,12 @@ class DropPauseIcon extends StatelessWidget {
     this.pauseBarWidth = 6,
     this.pauseBarHeight = 18,
   });
+
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      width: size,
-      height: size,
+      width: size.w,
+      height: size.h,
       child: Stack(
         alignment: Alignment.center,
         children: [
@@ -24,13 +27,13 @@ class DropPauseIcon extends StatelessWidget {
           Icon(
             Icons.water_drop_outlined,
             color: color,
-            size: size,
+            size: size.w,
           ),
           Row(
             mainAxisSize: MainAxisSize.min,
             children: [
               _pauseBar(),
-              SizedBox(width: size * 0.18),
+              SizedBox(width: size * 0.18.w),
               _pauseBar(),
             ],
           ),
@@ -40,11 +43,11 @@ class DropPauseIcon extends StatelessWidget {
   }
 
   Widget _pauseBar() => Container(
-    width: pauseBarWidth,
-    height: pauseBarHeight,
+    width: pauseBarWidth.w,
+    height: pauseBarHeight.h,
     decoration: BoxDecoration(
       color: color,
-      borderRadius: BorderRadius.circular(3),
+      borderRadius: BorderRadius.circular(3.r),
     ),
   );
 }

@@ -1,9 +1,13 @@
 import 'dart:math' as math;
-import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:get/get_core/src/get_main.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../../routes/app_route.dart';
+import '../../viewmodels/controller/activites_controller.dart';
+import '../../viewmodels/controller/timer_controller.dart';
+import '../../viewmodels/controller/duration_controller.dart';
+import '../../../data/models/screenmodel/duration_model.dart';
+
 class PauseActiveScreen extends StatefulWidget {
   const PauseActiveScreen({super.key});
 
@@ -16,20 +20,35 @@ class _PauseActiveScreenState extends State<PauseActiveScreen>
   late final AnimationController _rippleCtrl;
   late final AnimationController _dashShiftCtrl;
 
+  final TimerController timerController = Get.put(TimerController());
+  final DurationController durationController = Get.put(DurationController());
+  final ActivitiesController activitiesController = Get.put(ActivitiesController());
+
   @override
   void initState() {
     super.initState();
+    activitiesController.fetchActivities();
+
+    final rippleDuration = timerController.remainingSeconds.value > 0
+        ? timerController.remainingSeconds.value
+        : 1;
 
     _rippleCtrl = AnimationController(
       vsync: this,
-      duration: const Duration(seconds: 3),
-    )..repeat(reverse: false);
+      duration: Duration(seconds: rippleDuration),
+    )..forward();
 
     _dashShiftCtrl = AnimationController(
       vsync: this,
-      duration: const Duration(seconds: 4),
+      duration: const Duration(seconds: 8),
     )..repeat();
-    Timer(const Duration(seconds: 2), () {});
+
+    ever(timerController.remainingSeconds, (time) {
+      if (time == 0) {
+        _rippleCtrl.stop();
+        _dashShiftCtrl.stop();
+      }
+    });
   }
 
   @override
@@ -59,27 +78,82 @@ class _PauseActiveScreenState extends State<PauseActiveScreen>
                 );
               },
             ),
-            Text(
-              '"Your Pause is \nin progress"',
-              style: Theme.of(
-                context,
-              ).textTheme.bodySmall!.copyWith(color: Colors.white),
-              textAlign: TextAlign.center,
+            Obx(
+                  () => Text(
+                "Your Pause\n${(timerController.remainingSeconds.value ~/ 60)} min left",
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 18.sp,
+                  fontWeight: FontWeight.w500,
+                ),
+                textAlign: TextAlign.center,
+              ),
             ),
             Positioned(
-              bottom: 90,
+              bottom: 90.h,
               child: SizedBox(
-                width: 150,
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    shape: ContinuousRectangleBorder(
-                      borderRadius: BorderRadiusGeometry.circular(50)
-                    )
-                  ),
-                    onPressed: () {
-                      Get.toNamed(AppRoutes.pauseFeedbackScreen);
+                width: 150.w,
+                height: 50.h,
+                child: Obx(
+                      () => ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      shape: ContinuousRectangleBorder(
+                        borderRadius: BorderRadius.circular(50.r),
+                      ),
+                    ),
+                    onPressed: durationController.isLoading.value
+                        ? null
+                        : () async {
+                      timerController.stopTimer();
+                      if (activitiesController.activitiesList.isEmpty ||
+                          activitiesController.activitiesList[0].id.isEmpty) {
+                        Get.snackbar(
+                          "Error",
+                          "No valid activity found!",
+                          snackPosition: SnackPosition.BOTTOM,
+                        );
+                        return;
+                      }
+                      final activityId =
+                          activitiesController.activitiesList[0].id;
+
+                      final durationModel = DurationModel(
+                        activityId: activityId,
+                        duration: timerController.getElapsedSeconds(),
+                      );
+
+                      bool success =
+                      await durationController.sendDuration(durationModel);
+
+                      if (success) {
+                        Get.snackbar(
+                          "Success",
+                          "Duration saved successfully!",
+                          snackPosition: SnackPosition.BOTTOM,
+                        );
+                        Get.toNamed(AppRoutes.pauseFeedbackScreen);
+                      } else {
+                        Get.snackbar(
+                          "Error",
+                          "Failed to save duration. Try again.",
+                          snackPosition: SnackPosition.BOTTOM,
+                        );
+                      }
                     },
-                    child: Text("Stop"),
+                    child: durationController.isLoading.value
+                        ? SizedBox(
+                      height: 20.h,
+                      width: 20.w,
+                      child: CircularProgressIndicator(
+                        color: Colors.white,
+                        strokeWidth: 2.w,
+                      ),
+                    )
+                        : Text(
+                      "Stop",
+                      style: TextStyle(fontSize: 16.sp),
+                    ),
+                  ),
                 ),
               ),
             ),
@@ -89,6 +163,7 @@ class _PauseActiveScreenState extends State<PauseActiveScreen>
     );
   }
 }
+
 class _DashedRipplesPainter extends CustomPainter {
   final double progress;
   final double dashShift;
@@ -99,21 +174,19 @@ class _DashedRipplesPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     final center = size.center(Offset.zero);
     final baseRadius = math.min(size.width, size.height) * 0.18;
+
     final radii = [
       baseRadius * (1.00 + 0.10 * math.sin(progress * 2 * math.pi)),
-      baseRadius *
-          1.55 *
-          (1.00 + 0.08 * math.sin((progress + .33) * 2 * math.pi)),
-      baseRadius *
-          2.10 *
-          (1.00 + 0.06 * math.sin((progress + .66) * 2 * math.pi)),
+      baseRadius * 1.55 * (1.00 + 0.08 * math.sin((progress + .33) * 2 * math.pi)),
+      baseRadius * 2.10 * (1.00 + 0.06 * math.sin((progress + .66) * 2 * math.pi)),
     ];
+
     for (int i = 0; i < radii.length; i++) {
       final opacity = (0.65 - i * 0.12).clamp(0.0, 1.0);
       final paint = Paint()
         ..color = Colors.white.withOpacity(opacity)
         ..style = PaintingStyle.stroke
-        ..strokeWidth = 2;
+        ..strokeWidth = 2.w;
 
       _drawDashedCircle(
         canvas: canvas,
@@ -126,6 +199,7 @@ class _DashedRipplesPainter extends CustomPainter {
       );
     }
   }
+
   void _drawDashedCircle({
     required Canvas canvas,
     required Offset center,
@@ -139,14 +213,15 @@ class _DashedRipplesPainter extends CustomPainter {
     final step = 2 * math.pi / dashCount;
     final sweep = step * dashPortion;
     double start = rotation;
+
     for (int i = 0; i < dashCount; i++) {
       canvas.drawArc(rect, start, sweep, false, paint);
       start += step;
     }
   }
+
   @override
   bool shouldRepaint(covariant _DashedRipplesPainter oldDelegate) {
-    return oldDelegate.progress != progress ||
-        oldDelegate.dashShift != dashShift;
+    return oldDelegate.progress != progress || oldDelegate.dashShift != dashShift;
   }
 }

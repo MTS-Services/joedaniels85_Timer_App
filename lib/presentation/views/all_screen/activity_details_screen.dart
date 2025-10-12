@@ -1,73 +1,71 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:joedaniels85_timer_app/core/constants/app_colors.dart';
-import 'package:joedaniels85_timer_app/core/constants/asset_path.dart';
+import '../../widgets/activity_avatar.dart';
 
 class ActivityDetailsScreen extends StatelessWidget {
   const ActivityDetailsScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final args = Get.arguments as Map<String, dynamic>;
+    final String title = args['title'] ?? "No Title";
+    final String duration = args['duration'] ?? "N/A";
+    final String category = args['category'] ?? "N/A";
+    final String difficulty = args['difficulty'] ?? "N/A";
+    final List<String> benefits = List<String>.from(args['benefits'] ?? []);
+    final List<String> steps = List<String>.from(args['steps'] ?? []);
+
     return Scaffold(
       body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
-        child: Center(
+        padding: EdgeInsets.symmetric(horizontal: 15.w, vertical: 10.h),
+        child: SingleChildScrollView(
           child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              CircleAvatar(
-                radius: 40,
-                backgroundColor: AppColors.statusColor,
-                child: Image.asset(
-                  AssetPath.bookOpen,
-                  width: 40,
-                  height: 40,
-                  color: Colors.white,
-                ),
-              ),
-              SizedBox(height: 30),
-              Text("Activities"),
+              CustomCircleAvatar(title: title),
+              SizedBox(height: 30.h),
+              Text("Activities", style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontSize: 25.sp)),
+              SizedBox(height: 5.h),
               Text(
                 "Discover meaningful offline activities",
-                style: Theme.of(context).textTheme.bodySmall,
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(fontSize: 16.sp),
               ),
-              SizedBox(height: 30),
-              _statusBar(context),
-              SizedBox(height: 25),
-
+              SizedBox(height: 30.h),
+              _statusBar(
+                context,
+                duration: duration,
+                category: category,
+                difficulty: difficulty,
+              ),
+              SizedBox(height: 25.h),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
                     "Benefits",
-                    style: Theme.of(
-                      context,
-                    ).textTheme.bodyMedium!.copyWith(fontSize: 20),
+                    style: Theme.of(context)
+                        .textTheme
+                        .bodyMedium!
+                        .copyWith(fontSize: 20.sp),
                   ),
-                  SizedBox(height: 10),
-                  _buildRow(context, "Improves vocabulary"),
-                  SizedBox(height: 5),
-                  _buildRow(context, "Reduces stress"),
-                  SizedBox(height: 5),
-                  _buildRow(context, "Enhances focus"),
-                  SizedBox(height: 5),
-                  _buildRow(context, "Stimulates imagination"),
-                  SizedBox(height: 10),
+                  SizedBox(height: 10.h),
+                  ...benefits.map((benefit) => _buildRow(context, benefit)),
+                  SizedBox(height: 10.h),
                   Text(
-                    "Benefits",
-                    style: Theme.of(
-                      context,
-                    ).textTheme.bodyMedium!.copyWith(fontSize: 20),
+                    "Steps",
+                    style: Theme.of(context)
+                        .textTheme
+                        .bodyMedium!
+                        .copyWith(fontSize: 20.sp),
                   ),
-                  SizedBox(height: 10),
-                  _chooseStatus(context , "1" , "Choose a book you've been wanting to read"),
-                  SizedBox(height: 5),
-                  _chooseStatus(context , "2" , "Find a comfortable, well-lit spot"),
-                  SizedBox(height: 5),
-                  _chooseStatus(context , "3" , "Put your phone In another room"),
-                  SizedBox(height: 5),
-                  _chooseStatus(context , "4" , "Read for at least 20 minutes"),
-                  SizedBox(height: 5),
-                  _chooseStatus(context , "5" , "Take notes of interesting ideas"),
+                  SizedBox(height: 10.h),
+                  ...steps.asMap().entries.map((entry) {
+                    final index = entry.key;
+                    final step = entry.value;
+                    return _chooseStatus(context, "${index + 1}", step);
+                  }),
                 ],
               ),
             ],
@@ -77,110 +75,94 @@ class ActivityDetailsScreen extends StatelessWidget {
     );
   }
 
-  Widget _chooseStatus(BuildContext context , String a , String text) {
-    return Row(
-      children: [
-        CircleAvatar(
-          radius: 10,
-          backgroundColor: AppColors.statusColor,
-          child: Text(
-            "$a",
-            style: Theme.of(
-              context,
-            ).textTheme.bodySmall!.copyWith(fontSize: 15, color: Colors.white),
+  Widget _chooseStatus(BuildContext context, String a, String text) {
+    return Padding(
+      padding: EdgeInsets.only(bottom: 8.h),
+      child: Row(
+        children: [
+          CircleAvatar(
+            radius: 10.r,
+            backgroundColor: AppColors.statusColor,
+            child: Text(
+              a,
+              style: Theme.of(context)
+                  .textTheme
+                  .bodySmall!
+                  .copyWith(fontSize: 15.sp, color: Colors.white),
+            ),
           ),
-        ),
-        SizedBox(width: 10 ,),
-        Text(
-          text,
-          style: Theme.of(context).textTheme.bodySmall,
-        ),
-      ],
+          SizedBox(width: 10.w),
+          Expanded(child: Text(text, style: Theme.of(context).textTheme.bodySmall?.copyWith(fontSize: 14.sp))),
+        ],
+      ),
     );
   }
 
   Widget _buildRow(BuildContext context, String text) {
-    return Row(
-      children: [
-        CircleAvatar(radius: 5, backgroundColor: Colors.green),
-        SizedBox(width: 5),
-        Text(text, style: Theme.of(context).textTheme.bodySmall),
-      ],
+    return Padding(
+      padding: EdgeInsets.only(bottom: 5.h),
+      child: Row(
+        children: [
+          CircleAvatar(radius: 5.r, backgroundColor: Colors.green),
+          SizedBox(width: 5.w),
+          Expanded(child: Text(text, style: Theme.of(context).textTheme.bodySmall?.copyWith(fontSize: 14.sp))),
+        ],
+      ),
     );
   }
 
-  Widget _statusBar(BuildContext context) {
+  Widget _statusBar(
+      BuildContext context, {
+        required String duration,
+        required String category,
+        required String difficulty,
+      }) {
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+      padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 10.h),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(10),
+        borderRadius: BorderRadius.circular(10.r),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
+          _statusColumn(context, "Duration", duration),
+          _statusColumn(context, "Category", category),
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                "Duration",
-                style: Theme.of(
-                  context,
-                ).textTheme.bodySmall!.copyWith(fontSize: 14),
-              ),
-              Text(
-                "30-60 min",
-                style: Theme.of(context).textTheme.bodySmall!.copyWith(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ],
-          ),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                "Category",
-                style: Theme.of(
-                  context,
-                ).textTheme.bodySmall!.copyWith(fontSize: 14),
-              ),
-              Text(
-                "Learning",
-                style: Theme.of(context).textTheme.bodySmall!.copyWith(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ],
-          ),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                "Difficulty",
-                style: Theme.of(
-                  context,
-                ).textTheme.bodySmall!.copyWith(fontSize: 14),
-              ),
+              Text("Difficulty",
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(fontSize: 14.sp)),
               Container(
-                padding: EdgeInsets.symmetric(horizontal: 15, vertical: 2),
+                padding: EdgeInsets.symmetric(horizontal: 15.w, vertical: 2.h),
                 decoration: BoxDecoration(
-                  color: Color(0xffF6F6F6),
-                  borderRadius: BorderRadius.circular(15),
+                  color: const Color(0xffF6F6F6),
+                  borderRadius: BorderRadius.circular(15.r),
                 ),
                 child: Text(
-                  "Easy",
-                  style: Theme.of(
-                    context,
-                  ).textTheme.bodySmall!.copyWith(fontSize: 15),
+                  difficulty,
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(fontSize: 15.sp),
                 ),
               ),
             ],
           ),
         ],
       ),
+    );
+  }
+
+  Widget _statusColumn(BuildContext context, String label, String value) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(label,
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(fontSize: 14.sp)),
+        Text(value,
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+              fontSize: 16.sp,
+              fontWeight: FontWeight.bold,
+            )),
+      ],
     );
   }
 }

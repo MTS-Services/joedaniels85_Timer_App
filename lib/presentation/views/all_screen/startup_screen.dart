@@ -2,6 +2,7 @@ import 'dart:math' as math;
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:joedaniels85_timer_app/core/constants/app_colors.dart';
 import 'package:joedaniels85_timer_app/core/constants/asset_path.dart';
 import 'package:joedaniels85_timer_app/routes/app_route.dart';
@@ -31,19 +32,22 @@ class _TealLoaderScreenState extends State<TealLoaderScreen>
       vsync: this,
       duration: const Duration(seconds: 4),
     )..repeat();
+
     Timer(const Duration(seconds: 2), () {
       Get.offAllNamed(AppRoutes.bottomNavBarScreen);
     });
   }
+
   @override
   void dispose() {
     _rippleCtrl.dispose();
     _dashShiftCtrl.dispose();
     super.dispose();
   }
+
   @override
   Widget build(BuildContext context) {
-    const bg = AppColors.primary;
+    final bg = AppColors.primary;
     return Scaffold(
       backgroundColor: bg,
       body: SafeArea(
@@ -62,31 +66,37 @@ class _TealLoaderScreenState extends State<TealLoaderScreen>
                 );
               },
             ),
-            Image.asset(AssetPath.playIcon , width: 140, color: Colors.white,),
+            Image.asset(
+              AssetPath.playIcon,
+              width: 140.w,
+              color: Colors.white,
+            ),
             Positioned(
-              bottom: 90,
+              bottom: 90.h,
               child: Container(
-                padding:
-                const EdgeInsets.symmetric(horizontal: 22, vertical: 12),
+                padding: EdgeInsets.symmetric(horizontal: 22.w, vertical: 12.h),
                 decoration: BoxDecoration(
                   color: Colors.white.withOpacity(0.95),
-                  borderRadius: BorderRadius.circular(30),
+                  borderRadius: BorderRadius.circular(30.r),
                   boxShadow: [
                     BoxShadow(
                       color: Colors.black.withOpacity(0.08),
-                      blurRadius: 10,
-                      offset: const Offset(0, 4),
+                      blurRadius: 10.r,
+                      offset: Offset(0, 4.h),
                     ),
                   ],
                 ),
-                child: const Text(
+                child: Text(
                   "Loading...",
-                  style: TextStyle(fontWeight: FontWeight.normal),
+                  style: TextStyle(
+                    fontSize: 16.sp,
+                    fontWeight: FontWeight.normal,
+                  ),
                 ),
               ),
             ),
-            const Positioned(
-              bottom: 20,
+            Positioned(
+              bottom: 20.h,
               child: _HomeIndicator(),
             ),
           ],
@@ -123,7 +133,7 @@ class _DashedRipplesPainter extends CustomPainter {
       final paint = Paint()
         ..color = Colors.white.withOpacity(opacity)
         ..style = PaintingStyle.stroke
-        ..strokeWidth = 2;
+        ..strokeWidth = 2.w;
 
       _drawDashedCircle(
         canvas: canvas,
@@ -169,11 +179,11 @@ class _HomeIndicator extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 120,
-      height: 5,
+      width: 120.w,
+      height: 5.h,
       decoration: BoxDecoration(
         color: Colors.white.withOpacity(0.9),
-        borderRadius: BorderRadius.circular(4),
+        borderRadius: BorderRadius.circular(4.r),
       ),
     );
   }

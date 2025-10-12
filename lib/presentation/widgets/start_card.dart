@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../core/constants/app_colors.dart';
 
 class StartCard extends StatelessWidget {
@@ -35,14 +36,13 @@ class StartCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final Color defaultColor =
-    circleImage != null ? Colors.white : Colors.black;
+    final Color defaultColor = circleImage != null ? Colors.white : Colors.black;
 
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: hPadding, vertical: vPadding),
+      padding: EdgeInsets.symmetric(horizontal: hPadding.w, vertical: vPadding.h),
       decoration: BoxDecoration(
         color: bgColor,
-        borderRadius: BorderRadius.circular(5),
+        borderRadius: BorderRadius.circular(5.r),
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -57,10 +57,10 @@ class StartCard extends StatelessWidget {
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    const SizedBox(height: 20),
+                    SizedBox(height: 20.h),
                     if (centerIcon != null)
-                      Image.asset(centerIcon!, width: size),
-                    const SizedBox(height: 10),
+                      Image.asset(centerIcon!, width: size.w),
+                    SizedBox(height: 10.h),
                     Text.rich(
                       TextSpan(
                         children: [
@@ -70,7 +70,7 @@ class StartCard extends StatelessWidget {
                       ),
                       style: Theme.of(context).textTheme.bodySmall!.copyWith(
                         color: defaultColor,
-                        fontSize: 14,
+                        fontSize: 14.sp,
                       ),
                       textAlign: TextAlign.center,
                     ),
@@ -79,31 +79,30 @@ class StartCard extends StatelessWidget {
               ],
             ),
           ),
-          const SizedBox(height: 15),
+          SizedBox(height: 15.h),
           if (showButton)
             InkWell(
               onTap: onButtonTap,
-              borderRadius: BorderRadius.circular(50),
+              borderRadius: BorderRadius.circular(50.r),
               child: Container(
-                padding:
-                const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
-                width: buttonWidth,
+                padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 10.h),
+                width: buttonWidth.w,
                 decoration: BoxDecoration(
                   color: buttonColor,
-                  borderRadius: BorderRadius.circular(50),
+                  borderRadius: BorderRadius.circular(50.r),
                 ),
                 child: Center(
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       if (buttonIcon != null) ...[
-                        Icon(buttonIcon, color: Colors.white),
-                        const SizedBox(width: 5),
+                        Icon(buttonIcon, color: Colors.white, size: 20.sp),
+                        SizedBox(width: 5.w),
                       ],
                       Text(
                         buttonText,
                         style: Theme.of(context).textTheme.bodySmall!.copyWith(
-                          fontSize: 20,
+                          fontSize: 16.sp,
                           color: Colors.white,
                         ),
                       )

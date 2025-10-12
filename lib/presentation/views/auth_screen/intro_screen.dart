@@ -141,7 +141,9 @@ class _IntroScreenState extends State<IntroScreen> {
                 ),
                 SizedBox(height: 10),
                 TextButton(
-                  onPressed: () {},
+                  onPressed: () {
+                    Get.toNamed(AppRoutes.tealLoaderScreen);
+                  },
                   child: Text("Skip", style: TextStyle(color: Colors.black)),
                 ),
                 const SizedBox(height: 50),

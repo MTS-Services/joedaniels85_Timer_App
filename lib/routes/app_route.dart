@@ -15,4 +15,6 @@ class AppRoutes {
   static const String activitiesScreen = '/activitiesScreen';
   static const String activityDetailsScreen = '/activityDetailsScreen';
   static const String profileScreen = '/profileScreen';
+  static const String registrationCompleteOtp = '/registrationCompleteOtp';
+  static const String analyticsScreen = '/analyticsScreen';
 }

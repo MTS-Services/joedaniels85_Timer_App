@@ -1,6 +1,6 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
-
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../core/constants/app_colors.dart';
 
 class WeeklyMinutesBarChart extends StatelessWidget {
@@ -9,7 +9,7 @@ class WeeklyMinutesBarChart extends StatelessWidget {
   final Color backgroundColor;
   final double barWidth;
   final double borderRadius;
-  WeeklyMinutesBarChart({
+  const WeeklyMinutesBarChart({
     super.key,
     required this.minutes,
     this.barColor = AppColors.primary,
@@ -23,12 +23,13 @@ class WeeklyMinutesBarChart extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final maxMin = (minutes.reduce((a, b) => a > b ? a : b)).toDouble();
+    final visualMax = 100.0; // Maximum visual bar height (100%)
 
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(16.r),
         boxShadow: const [
           BoxShadow(
             blurRadius: 2,
@@ -45,7 +46,7 @@ class WeeklyMinutesBarChart extends StatelessWidget {
             gridData: const FlGridData(show: false),
             borderData: FlBorderData(show: false),
             barTouchData: BarTouchData(enabled: false),
-            maxY: (maxMin * 1.2).clamp(10, 120),
+            maxY: visualMax,
             titlesData: FlTitlesData(
               leftTitles: const AxisTitles(
                 sideTitles: SideTitles(showTitles: false),
@@ -59,7 +60,7 @@ class WeeklyMinutesBarChart extends StatelessWidget {
               bottomTitles: AxisTitles(
                 sideTitles: SideTitles(
                   showTitles: true,
-                  reservedSize: 36,
+                  reservedSize: 36.h,
                   getTitlesWidget: (value, meta) {
                     final i = value.toInt();
                     if (i < 0 || i >= _days.length) return const SizedBox();
@@ -68,17 +69,18 @@ class WeeklyMinutesBarChart extends StatelessWidget {
                       children: [
                         Text(
                           _days[i],
-                          style: const TextStyle(
-                            fontSize: 12,
+                          style: TextStyle(
+                            fontSize: 10.sp,
                             color: Colors.black87,
                           ),
                         ),
-                        const SizedBox(height: 2),
+                        SizedBox(height: 2.h),
                         Text(
                           '${minutes[i]} min',
-                          style: const TextStyle(
-                            fontSize: 10,
+                          style: TextStyle(
+                            fontSize: 10.sp,
                             color: Colors.black54,
+                            overflow: TextOverflow.ellipsis,
                           ),
                         ),
                       ],
@@ -88,20 +90,21 @@ class WeeklyMinutesBarChart extends StatelessWidget {
               ),
             ),
             barGroups: List.generate(minutes.length, (i) {
+              final visualValue = (minutes[i] / maxMin * visualMax).clamp(0, visualMax);
               return BarChartGroupData(
                 x: i,
-                barsSpace: 4,
+                barsSpace: 4.w,
                 barRods: [
                   BarChartRodData(
-                    toY: minutes[i].toDouble(),
+                    toY: visualValue.toDouble(),
                     borderRadius: BorderRadius.vertical(
-                      top: Radius.circular(borderRadius),
+                      top: Radius.circular(borderRadius.r),
                     ),
-                    width: barWidth,
+                    width: barWidth.w,
                     color: barColor,
                     backDrawRodData: BackgroundBarChartRodData(
                       show: true,
-                      toY: (maxMin * 1.05),
+                      toY: visualMax,
                       color: backgroundColor,
                     ),
                   ),

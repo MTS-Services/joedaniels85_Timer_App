@@ -1,13 +1,29 @@
 import 'package:flutter/material.dart';
-import 'package:joedaniels85_timer_app/core/constants/asset_path.dart';
+import 'package:get/get.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import '../../../core/constants/asset_path.dart';
+import '../../../data/services/firebase_services.dart';
+import '../../viewmodels/controller/profile_controller.dart';
+import '../../viewmodels/controller/progress_controller.dart';
+import '../auth_screen/sign_in_screen.dart';
 
 class ProfileScreen extends StatelessWidget {
-  const ProfileScreen({super.key});
+  ProfileScreen({super.key});
+
+  final UserProgressController userProgressController = Get.put(UserProgressController());
+  final UserProfileController profile = Get.put(UserProfileController());
+  final FirebaseServices firebaseServices = FirebaseServices();
+
   @override
   Widget build(BuildContext context) {
+    final year = userProgressController.todayActivities.isNotEmpty
+        ? userProgressController.todayActivities.first.createdAt?.year ??
+        DateTime.now().year
+        : DateTime.now().year;
+
     return Scaffold(
-      body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
+      body: SingleChildScrollView(
+        padding: EdgeInsets.symmetric(horizontal: 15.w, vertical: 10.h),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -15,50 +31,98 @@ class ProfileScreen extends StatelessWidget {
               child: Column(
                 children: [
                   CircleAvatar(
-                    radius: 40,
-                    child: Image.asset(
-                      AssetPath.profilePhoto,
-                      width: 120,
-                      height: 120,
-                    ),
+                    radius: 40.r,
+                    child: Icon(Icons.person, size: 50.sp),
                   ),
-                  const SizedBox(height: 20),
-                  const Text("Activities"),
+                  SizedBox(height: 20.h),
                   Text(
-                    "Member since Jan 2024",
-                    style: Theme.of(context).textTheme.bodySmall,
+                    "Activities",
+                    style: TextStyle(fontSize: 18.sp, fontWeight: FontWeight.bold),
                   ),
-                  const SizedBox(height: 25),
-                  _statusProfile(context),
+                  SizedBox(height: 10.h),
+                  Obx(() {
+                    final name = profile.profileList.isNotEmpty
+                        ? profile.profileList.first.name
+                        : "Loading...";
+                    return Text(
+                      "Member since $name $year",
+                      style: Theme.of(context).textTheme.bodySmall!.copyWith(
+                        fontSize: 14.sp,
+                      ),
+                    );
+                  }),
+                  SizedBox(height: 25.h),
+                  _statusProfile(),
                 ],
               ),
             ),
-            const SizedBox(height: 25),
-            const Text(
+            SizedBox(height: 25.h),
+            Text(
               "Recent Achievements",
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              style: TextStyle(fontSize: 18.sp, fontWeight: FontWeight.bold),
             ),
-            SizedBox(height: 10,),
-            _buildCard(context,"First Step" , "Completed your first session"),
-            _buildCard(context,"First Step" , "Completed your first session"),
-            _buildCard(context,"First Step" , "Completed your first session"),
-            SizedBox(height: 50,),
+            SizedBox(height: 10.h),
+            Obx(() {
+              final stats = userProgressController.overallStats.value;
+              final progress = userProgressController.progressResponse.value?.data;
+
+              int totalSessions = stats?.completedActivities ?? 0;
+              int streak = progress?.currentStreak ?? 0;
+              int totalHours = stats?.totalActivities ?? 0;
+
+              List<Widget> achievements = [];
+
+              if (totalSessions >= 1) {
+                achievements.add(
+                  _buildCard(context, "First Step", "Completed your first session"),
+                );
+              }
+
+              if (streak >= 3) {
+                achievements.add(
+                  _buildCard(context, "3 Day Streak", "Maintained focus for 3 days"),
+                );
+              }
+
+              if (totalHours >= 1) {
+                achievements.add(
+                  _buildCard(context, "Hour Master", "Completed a 1-hour session"),
+                );
+              }
+
+              if (achievements.isEmpty) {
+                achievements.add(
+                  Text(
+                    "No achievements yet. Keep going!",
+                    style: TextStyle(color: Colors.grey, fontSize: 14.sp),
+                  ),
+                );
+              }
+
+              return Column(children: achievements);
+            }),
+            SizedBox(height: 50.h),
             SizedBox(
               width: double.infinity,
               child: ElevatedButton.icon(
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.white,
                   foregroundColor: Colors.black,
-                  side: const BorderSide(color: Colors.black, width: 2),
+                  side: BorderSide(color: Colors.black, width: 2.w),
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
+                    borderRadius: BorderRadius.circular(8.r),
                   ),
+                  padding: EdgeInsets.symmetric(vertical: 12.h),
                 ),
-                onPressed: () {
-
+                onPressed: () async {
+                  await firebaseServices.signOut();
+                  Get.offAll(() => SignInScreen());
                 },
-                icon: Icon(Icons.login , size: 24,),
-                label: const Text("Log Out"),
+                icon: Icon(Icons.login, size: 24.sp),
+                label: Text(
+                  "Log Out",
+                  style: TextStyle(fontSize: 16.sp),
+                ),
               ),
             ),
           ],
@@ -66,107 +130,95 @@ class ProfileScreen extends StatelessWidget {
       ),
     );
   }
-Widget _buildCard(BuildContext context , String text , String subText ) {
+
+  Widget _buildCard(BuildContext context, String text, String subText) {
     return Card(
       elevation: 0,
       color: Colors.white,
       child: ListTile(
-        leading: CircleAvatar(child: Image.asset(AssetPath.wineIcon)),
+        leading: CircleAvatar(
+          radius: 20.r,
+          child: Image.asset(
+            AssetPath.wineIcon,
+            width: 24.w,
+            height: 24.h,
+          ),
+        ),
         title: Text(
           text,
           style: Theme.of(context).textTheme.bodyMedium!.copyWith(
-            fontSize: 18,
+            fontSize: 18.sp,
             fontWeight: FontWeight.w600,
           ),
         ),
-        subtitle: Text(
-          subText,
-          style: Theme.of(context).textTheme.bodySmall,
-        ),
+        subtitle: Text(subText, style: Theme.of(context).textTheme.bodySmall!.copyWith(fontSize: 14.sp)),
       ),
     );
   }
-  Widget _statusProfile(BuildContext context) {
+
+  Widget _statusProfile() {
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: 8, vertical: 10),
+      padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 10.h),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(15),
+        borderRadius: BorderRadius.circular(15.r),
       ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Text(
-                "42",
-                style: Theme.of(
-                  context,
-                ).textTheme.bodyMedium!.copyWith(fontSize: 18),
+      child: Obx(() {
+        return Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Flexible(
+              child: _statusColumn(
+                value: userProgressController.overallStats.value?.completedActivities ?? 0,
+                label: "Total Sessions",
               ),
-              Text(
-                "Total Sessions",
-                style: Theme.of(
-                  context,
-                ).textTheme.bodySmall!.copyWith(fontSize: 12),
+            ),
+            Flexible(
+              child: _statusColumn(
+                value: userProgressController.overallStats.value?.totalActivities ?? 0,
+                label: "Screen \nfree time",
+                suffix: "h",
               ),
-            ],
-          ),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Text(
-                "28h",
-                style: Theme.of(
-                  context,
-                ).textTheme.bodyMedium!.copyWith(fontSize: 18),
+            ),
+            Flexible(
+              child: _statusColumn(
+                value: userProgressController.progressResponse.value?.data?.currentStreak ?? 0,
+                label: "Current Streak",
               ),
-              Text(
-                "Screen \nfree time",
-                style: Theme.of(
-                  context,
-                ).textTheme.bodySmall!.copyWith(fontSize: 12),
-                textAlign: TextAlign.center,
+            ),
+            Flexible(
+              child: _statusColumn(
+                value: userProgressController.categoryBreakdownList.isNotEmpty
+                    ? userProgressController.categoryBreakdownList.first.count ?? 0
+                    : 0,
+                label: "Longest Streak",
               ),
-            ],
-          ),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Text(
-                "3",
-                style: Theme.of(
-                  context,
-                ).textTheme.bodyMedium!.copyWith(fontSize: 18),
-              ),
-              Text(
-                "Current Streak",
-                style: Theme.of(
-                  context,
-                ).textTheme.bodySmall!.copyWith(fontSize: 12),
-              ),
-            ],
-          ),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Text(
-                "3",
-                style: Theme.of(
-                  context,
-                ).textTheme.bodyMedium!.copyWith(fontSize: 18),
-              ),
-              Text(
-                "Longest Streak",
-                style: Theme.of(
-                  context,
-                ).textTheme.bodySmall!.copyWith(fontSize: 12),
-              ),
-            ],
-          ),
-        ],
-      ),
+            ),
+          ],
+        );
+      }),
+    );
+  }
+
+  Widget _statusColumn({
+    required int value,
+    required String label,
+    String suffix = "",
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        Text(
+          "$value$suffix",
+          style: TextStyle(fontSize: 18.sp, fontWeight: FontWeight.bold),
+        ),
+        SizedBox(height: 4.h),
+        Text(
+          label,
+          style: TextStyle(fontSize: 12.sp),
+          textAlign: TextAlign.center,
+        ),
+      ],
     );
   }
 }
