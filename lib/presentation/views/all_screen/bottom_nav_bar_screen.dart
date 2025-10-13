@@ -6,6 +6,7 @@ import 'package:joedaniels85_timer_app/presentation/views/all_screen/profile_scr
 import 'package:joedaniels85_timer_app/presentation/views/all_screen/task_screen.dart';
 import 'package:joedaniels85_timer_app/presentation/views/all_screen/timer_screen.dart';
 import '../../viewmodels/controller/profile_controller.dart';
+import '../../viewmodels/controller/profile_image_controller.dart';
 import '../../widgets/custome_app_bar.dart';
 import '../../widgets/custom_bottom_nav.dart';
 import 'activities_screen.dart';
@@ -20,6 +21,7 @@ class BottomNavBarScreen extends StatefulWidget {
 
 class _BottomNavBarScreenState extends State<BottomNavBarScreen> {
   final UserProfileController controller = Get.put(UserProfileController());
+  final ProfileImageController imageController = Get.put(ProfileImageController());
   int _selectedIndex = 0;
 
   void _onItemTapped(int index) {

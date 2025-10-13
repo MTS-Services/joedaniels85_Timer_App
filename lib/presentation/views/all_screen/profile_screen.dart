@@ -4,6 +4,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../../core/constants/asset_path.dart';
 import '../../../data/services/firebase_services.dart';
 import '../../viewmodels/controller/profile_controller.dart';
+import '../../viewmodels/controller/profile_image_controller.dart';
 import '../../viewmodels/controller/progress_controller.dart';
 import '../auth_screen/sign_in_screen.dart';
 
@@ -13,6 +14,7 @@ class ProfileScreen extends StatelessWidget {
   final UserProgressController userProgressController = Get.put(UserProgressController());
   final UserProfileController profile = Get.put(UserProfileController());
   final FirebaseServices firebaseServices = FirebaseServices();
+  final ProfileImageController controller = Get.put(ProfileImageController());
 
   @override
   Widget build(BuildContext context) {
@@ -30,10 +32,19 @@ class ProfileScreen extends StatelessWidget {
             Center(
               child: Column(
                 children: [
-                  CircleAvatar(
-                    radius: 40.r,
-                    child: Icon(Icons.person, size: 50.sp),
-                  ),
+                  Obx(() {
+                    final image = controller.imageFile.value;
+                    return GestureDetector(
+                      onTap: controller.pickImage,
+                      child: CircleAvatar(
+                        radius: 40.r,
+                        backgroundImage: image != null ? FileImage(image) : null,
+                        child: image == null
+                            ? Icon(Icons.person, size: 50.sp)
+                            : null,
+                      ),
+                    );
+                  }),
                   SizedBox(height: 20.h),
                   Text(
                     "Activities",

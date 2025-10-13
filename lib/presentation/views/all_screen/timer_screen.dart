@@ -22,7 +22,6 @@ class TimerScreen extends StatelessWidget {
     return Scaffold(
       body: SafeArea(
         child: Obx(() {
-          // ✅ Loading state check
           if (userProgressController.isLoading.value) {
             return const Center(
               child: CircularProgressIndicator(),
