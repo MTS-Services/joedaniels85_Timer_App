@@ -12,15 +12,9 @@ import '../auth_screen/sign_in_screen.dart';
 class ProfileScreen extends StatelessWidget {
   ProfileScreen({super.key});
 
-  final UserProgressController userProgressController = Get.put(
-    UserProgressController(),
-  );
-  final UserProfileController profileController = Get.put(
-    UserProfileController(),
-  );
-  final ProfileImageController imageController = Get.put(
-    ProfileImageController(),
-  );
+  final UserProgressController userProgressController = Get.put(UserProgressController());
+  final UserProfileController profileController = Get.put(UserProfileController());
+  final ProfileImageController imageController = Get.put(ProfileImageController());
   final FirebaseServices firebaseServices = FirebaseServices();
 
   @override
@@ -36,48 +30,74 @@ class ProfileScreen extends StatelessWidget {
                 children: [
                   Obx(() {
                     final file = imageController.imageFile.value;
-                    final profilePic =
-                        profileController.profileList.value?.profilePic;
+                    final rawProfilePic = profileController.profileList.value?.profilePic;
 
-                    print("profilePic =============== $profilePic");
-                    print("file =============== $file");
+                    // Remove extra quotes and trim
+                    final profilePic = rawProfilePic?.replaceAll("'", "").trim() ?? "";
 
-                    ImageProvider? image;
+                    ImageProvider? imageProvider;
+
                     if (file != null) {
-                      image = FileImage(file);
-                    } else if (profilePic != null && profilePic.isNotEmpty) {
-                      image = NetworkImage(profilePic);
+                      imageProvider = FileImage(file);
+                    } else if (profilePic.isNotEmpty) {
+                      if (profilePic.startsWith("http")) {
+                        imageProvider = NetworkImage(profilePic);
+                      } else {
+                        final localFile = File(profilePic);
+                        if (localFile.existsSync()) {
+                          imageProvider = FileImage(localFile);
+                        }
+                      }
                     }
 
-                    return GestureDetector(
-                      onTap: imageController.pickImage,
-                      child: CircleAvatar(
-                        radius: 40.r,
-                        backgroundImage: image,
-                        child: image == null
-                            ? Icon(Icons.person, size: 50.sp)
-                            : null,
-                      ),
+                    return Stack(
+                      children: [
+                        GestureDetector(
+                          onTap: imageController.pickImage,
+                          child: Container(
+                            width: 120,
+                            height: 120,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              border: Border.all(color: Colors.grey, width: 2),
+                              image: DecorationImage(
+                                image: imageProvider ?? AssetImage('assets/default_profile.png') as ImageProvider,
+                                fit: BoxFit.cover,
+                              ),
+                            ),
+                          ),
+                        ),
+                        Positioned(
+                          bottom: 0,
+                          right: 0,
+                          child: GestureDetector(
+                            onTap: imageController.pickImage,
+                            child: CircleAvatar(
+                              radius: 14,
+                              backgroundColor: Colors.blue,
+                              child: Icon(Icons.camera_alt, size: 16, color: Colors.white),
+                            ),
+                          ),
+                        ),
+                      ],
                     );
                   }),
+
                   SizedBox(height: 20.h),
 
                   Text(
                     "Activities",
-                    style: TextStyle(
-                      fontSize: 18.sp,
-                      fontWeight: FontWeight.bold,
-                    ),
+                    style: TextStyle(fontSize: 18.sp, fontWeight: FontWeight.bold),
                   ),
                   SizedBox(height: 10.h),
+
                   Obx(() {
-                    final name =
-                        profileController.profileList.value?.name ?? "Loading...";
+                    final name = profileController.profileList.value?.name ?? "Loading...";
                     final year = userProgressController.todayActivities.isNotEmpty
-                        ? userProgressController
-                        .todayActivities.first.createdAt?.year ??
+                        ? userProgressController.todayActivities.first.createdAt?.year ??
                         DateTime.now().year
                         : DateTime.now().year;
+
                     return Text(
                       "Member since $name $year",
                       style: Theme.of(context)
@@ -86,6 +106,7 @@ class ProfileScreen extends StatelessWidget {
                           .copyWith(fontSize: 14.sp),
                     );
                   }),
+
                   SizedBox(height: 25.h),
                   _statusProfile(),
                 ],
@@ -100,54 +121,7 @@ class ProfileScreen extends StatelessWidget {
               style: TextStyle(fontSize: 18.sp, fontWeight: FontWeight.bold),
             ),
             SizedBox(height: 10.h),
-            Obx(() {
-              final stats = userProgressController.overallStats.value;
-              final progress =
-                  userProgressController.progressResponse.value?.data;
-
-              int totalSessions = stats?.completedActivities ?? 0;
-              int streak = progress?.currentStreak ?? 0;
-              int totalHours = stats?.totalActivities ?? 0;
-
-              List<Widget> achievements = [];
-
-              if (totalSessions >= 1) {
-                achievements.add(
-                  _buildCard(
-                    context,
-                    "First Step",
-                    "Completed your first session",
-                  ),
-                );
-              }
-              if (streak >= 3) {
-                achievements.add(
-                  _buildCard(
-                    context,
-                    "3 Day Streak",
-                    "Maintained focus for 3 days",
-                  ),
-                );
-              }
-              if (totalHours >= 1) {
-                achievements.add(
-                  _buildCard(
-                    context,
-                    "Hour Master",
-                    "Completed a 1-hour session",
-                  ),
-                );
-              }
-              if (achievements.isEmpty) {
-                achievements.add(
-                  Text(
-                    "No achievements yet. Keep going!",
-                    style: TextStyle(color: Colors.grey, fontSize: 14.sp),
-                  ),
-                );
-              }
-              return Column(children: achievements);
-            }),
+            _recentAchievements(context),
 
             SizedBox(height: 50.h),
 
@@ -176,6 +150,39 @@ class ProfileScreen extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  // -------------------- Recent Achievements --------------------
+  Widget _recentAchievements(BuildContext context) {
+    return Obx(() {
+      final stats = userProgressController.overallStats.value;
+      final progress = userProgressController.progressResponse.value?.data;
+
+      int totalSessions = stats?.completedActivities ?? 0;
+      int streak = progress?.currentStreak ?? 0;
+      int totalHours = stats?.totalActivities ?? 0;
+
+      List<Widget> achievements = [];
+
+      if (totalSessions >= 1) {
+        achievements.add(_buildCard(context, "First Step", "Completed your first session"));
+      }
+      if (streak >= 3) {
+        achievements.add(_buildCard(context, "3 Day Streak", "Maintained focus for 3 days"));
+      }
+      if (totalHours >= 1) {
+        achievements.add(_buildCard(context, "Hour Master", "Completed a 1-hour session"));
+      }
+      if (achievements.isEmpty) {
+        achievements.add(
+          Text(
+            "No achievements yet. Keep going!",
+            style: TextStyle(color: Colors.grey, fontSize: 14.sp),
+          ),
+        );
+      }
+      return Column(children: achievements);
+    });
   }
 
   // -------------------- Achievement Card --------------------
@@ -220,33 +227,27 @@ class ProfileScreen extends StatelessWidget {
           children: [
             Flexible(
               child: _statusColumn(
-                value: userProgressController.overallStats.value
-                    ?.completedActivities ??
-                    0,
+                value: userProgressController.overallStats.value?.completedActivities ?? 0,
                 label: "Total Sessions",
               ),
             ),
             Flexible(
               child: _statusColumn(
-                value: userProgressController.overallStats.value?.totalActivities ??
-                    0,
+                value: userProgressController.overallStats.value?.totalActivities ?? 0,
                 label: "Screen \nfree time",
                 suffix: "h",
               ),
             ),
             Flexible(
               child: _statusColumn(
-                value: userProgressController.progressResponse.value?.data
-                    ?.currentStreak ??
-                    0,
+                value: userProgressController.progressResponse.value?.data?.currentStreak ?? 0,
                 label: "Current Streak",
               ),
             ),
             Flexible(
               child: _statusColumn(
                 value: userProgressController.categoryBreakdownList.isNotEmpty
-                    ? userProgressController.categoryBreakdownList.first.count ??
-                    0
+                    ? userProgressController.categoryBreakdownList.first.count ?? 0
                     : 0,
                 label: "Longest Streak",
               ),

@@ -1,12 +1,14 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
-
 import '../viewmodels/controller/profile_controller.dart';
+import '../viewmodels/controller/profile_image_controller.dart';
 
 class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
   final String subtitle;
-  final UserProfileController controller = Get.put(UserProfileController());
+  final UserProfileController profileController = Get.put(UserProfileController());
+  final ProfileImageController imageController = Get.put(ProfileImageController());
 
   CustomAppBar({super.key, required this.subtitle});
 
@@ -16,19 +18,39 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
       automaticallyImplyLeading: false,
       surfaceTintColor: Colors.transparent,
       toolbarHeight: 70.h,
-      title: Obx(
-        () => Row(
+      title: Obx(() {
+        final file = imageController.imageFile.value;
+        final rawProfilePic = profileController.profileList.value?.profilePic;
+        final name = profileController.profileList.value?.name ?? "User Name";
+
+        // Clean path
+        final profilePic = rawProfilePic?.replaceAll("'", "").trim() ?? "";
+
+        ImageProvider? imageProvider;
+
+        if (file != null) {
+          imageProvider = FileImage(file);
+        } else if (profilePic.isNotEmpty) {
+          if (profilePic.startsWith("http")) {
+            imageProvider = NetworkImage(profilePic);
+          } else {
+            final localFile = File(profilePic);
+            if (localFile.existsSync()) {
+              imageProvider = FileImage(localFile);
+            }
+          }
+        }
+
+        return Row(
           children: [
+            // Name & Subtitle
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Text(
-                    controller.profileList.value != null &&
-                            controller.profileList.value!.name.isNotEmpty
-                        ? controller.profileList.value!.name
-                        : "User Name",
+                    name,
                     overflow: TextOverflow.ellipsis,
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                       fontSize: 18.sp,
@@ -36,7 +58,6 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
                       color: Colors.black,
                     ),
                   ),
-
                   SizedBox(height: 5.h),
                   Text(
                     subtitle,
@@ -53,27 +74,22 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
             // Profile Picture
             Padding(
               padding: EdgeInsets.only(left: 12.w),
-              child: Obx(() {
-                final imageUrl = controller.profileList.value?.profilePic ?? "";
-                return CircleAvatar(
-                  radius: 20.r,
-                  backgroundColor: Colors.grey.shade300,
-                  backgroundImage: imageUrl.isNotEmpty
-                      ? NetworkImage(imageUrl)
-                      : null,
-                  child: imageUrl.isEmpty
-                      ? Icon(
-                          Icons.person,
-                          size: 22.r,
-                          color: Colors.grey.shade700,
-                        )
-                      : null,
-                );
-              }),
+              child: CircleAvatar(
+                radius: 20.r,
+                backgroundColor: Colors.grey.shade300,
+                backgroundImage: imageProvider,
+                child: imageProvider == null
+                    ? Icon(
+                  Icons.person,
+                  size: 22.r,
+                  color: Colors.grey.shade700,
+                )
+                    : null,
+              ),
             ),
           ],
-        ),
-      ),
+        );
+      }),
     );
   }
 

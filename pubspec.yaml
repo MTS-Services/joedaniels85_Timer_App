@@ -27,6 +27,7 @@ dependencies:
   flutter_screenutil: ^5.9.3
   image_picker: ^1.1.1
   firebase_storage: ^13.0.2
+  flutter_image_compress: ^2.4.0
 
 
 dev_dependencies:
