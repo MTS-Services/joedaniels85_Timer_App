@@ -20,6 +20,9 @@ class _SignInScreenState extends State<SignInScreen> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   final FirebaseServices firebaseServices = FirebaseServices();
+
+  bool _obscurePassword = true; // Password hide/show toggle
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -39,21 +42,36 @@ class _SignInScreenState extends State<SignInScreen> {
                     "Welcome back you've been missed!",
                     style: Theme.of(context).textTheme.bodySmall,
                   ),
-
                   const SizedBox(height: 50),
 
+                  // Email Field
                   TextFormField(
                     controller: _emailController,
                     decoration: const InputDecoration(hintText: "Email"),
                   ),
                   const SizedBox(height: 15),
 
+                  // Password Field with toggle
                   TextFormField(
                     controller: _passwordController,
-                    decoration: const InputDecoration(hintText: "Password"),
-                    obscureText: true,
+                    obscureText: _obscurePassword,
+                    decoration: InputDecoration(
+                      hintText: "Password",
+                      suffixIcon: IconButton(
+                        icon: Icon(
+                          _obscurePassword ? Icons.visibility : Icons.visibility_off,
+                        ),
+                        onPressed: () {
+                          setState(() {
+                            _obscurePassword = !_obscurePassword;
+                          });
+                        },
+                      ),
+                    ),
                   ),
+                  const SizedBox(height: 10),
 
+                  // Forgot Password
                   Row(
                     mainAxisAlignment: MainAxisAlignment.end,
                     children: [
@@ -61,38 +79,37 @@ class _SignInScreenState extends State<SignInScreen> {
                         onPressed: () {
                           Get.toNamed(AppRoutes.emailVarificationScreen);
                         },
-                        child: Text("Forgot your password?"),
+                        child: const Text("Forgot your password?"),
                       ),
                     ],
                   ),
                   const SizedBox(height: 15),
 
+                  // Sign-In Button
                   SizedBox(
                     width: double.infinity,
                     child: Obx(() {
                       return signUPController.isLoading.value
                           ? const Center(child: CircularProgressIndicator())
                           : ElevatedButton(
-                        onPressed: () {
-                          handleSignIn(context);
-                        },
+                        onPressed: () => handleSignIn(context),
                         child: const Text("Sign In"),
                       );
                     }),
                   ),
+                  const SizedBox(height: 10),
 
-
+                  // Create New Account
                   TextButton(
                     onPressed: () {
                       Get.toNamed(AppRoutes.signUpScreen);
                     },
                     child: const Text("Create a new account"),
                   ),
-
                   const SizedBox(height: 15),
                   const ContinueWith(),
                   const SizedBox(height: 15),
-                  _customButton(),
+                  _googleSignInButton(),
                 ],
               ),
             ),
@@ -105,6 +122,7 @@ class _SignInScreenState extends State<SignInScreen> {
   Future<void> handleSignIn(BuildContext context) async {
     final email = _emailController.text.trim();
     final password = _passwordController.text.trim();
+
     if (email.isEmpty || password.isEmpty) {
       showSimpleSnackBar(
         context,
@@ -145,7 +163,7 @@ class _SignInScreenState extends State<SignInScreen> {
     }
   }
 
-  Widget _customButton() {
+  Widget _googleSignInButton() {
     return SizedBox(
       width: double.infinity,
       child: ElevatedButton.icon(
@@ -159,7 +177,7 @@ class _SignInScreenState extends State<SignInScreen> {
           try {
             bool isSignedIn = await firebaseServices.googleSignIn();
             if (isSignedIn) {
-              Get.offAllNamed(AppRoutes.introScreen); // Homepage এ পাঠানো
+              Get.offAllNamed(AppRoutes.introScreen);
               showSimpleSnackBar(
                 context,
                 "Signed in successfully!",
@@ -189,7 +207,6 @@ class _SignInScreenState extends State<SignInScreen> {
       ),
     );
   }
-
 
   @override
   void dispose() {

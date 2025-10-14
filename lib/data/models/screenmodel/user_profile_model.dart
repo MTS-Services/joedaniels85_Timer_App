@@ -1,16 +1,16 @@
-class UserProfile {
-  final bool success;
-  final UserData data;
-  final String message;
+class UserProfileModel {
+  bool success;
+  UserData data;
+  String message;
 
-  UserProfile({
+  UserProfileModel({
     required this.success,
     required this.data,
     required this.message,
   });
 
-  factory UserProfile.fromJson(Map<String, dynamic> json) {
-    return UserProfile(
+  factory UserProfileModel.fromJson(Map<String, dynamic> json) {
+    return UserProfileModel(
       success: json['success'],
       data: UserData.fromJson(json['data']),
       message: json['message'],
@@ -27,15 +27,15 @@ class UserProfile {
 }
 
 class UserData {
-  final String id;
-  final String name;
-  final String email;
-  final String? profilePic;
-  final String provider;
-  final DateTime lastLogin;
-  final DateTime createdAt;
-  final DateTime updatedAt;
-  final Stats stats;
+  String id;
+  String name;
+  String email;
+  String? profilePic;
+  String provider;
+  DateTime lastLogin;
+  DateTime createdAt;
+  DateTime updatedAt;
+  Stats stats;
 
   UserData({
     required this.id,
@@ -79,10 +79,10 @@ class UserData {
 }
 
 class Stats {
-  final int totalActivities;
-  final int completedActivities;
-  final int daysSinceMember;
-  final String memberSince;
+  int totalActivities;
+  int completedActivities;
+  int daysSinceMember;
+  String memberSince;
 
   Stats({
     required this.totalActivities,

@@ -19,9 +19,7 @@ class PauseFeedbackScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: CustomAppBar(
-        title: "Hi Joe",
         subtitle: "Ready for a screen-free evening?",
-        profileImage: AssetPath.profile,
       ),
       body: SafeArea(
         child: Center(
