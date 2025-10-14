@@ -154,10 +154,8 @@ class AnalyticsScreen extends StatelessWidget {
   /// Total Time + Today %
   Widget _buildRow() {
     return Obx(() {
-      // API থেকে আসা total duration ধরে নিই seconds, তাই divide by 60
       final backendMinutes = ((progressController.progressResponse.value?.data?.overall?.totalDurationMinutes ?? 0) / 60).round();
 
-      // আজকের activities duration add
       final todayMinutes = progressController.todayActivities.fold<int>(
         0,
             (sum, entry) => sum + ((entry.duration ?? 0) / 60).round(),

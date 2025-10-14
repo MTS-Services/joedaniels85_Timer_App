@@ -78,7 +78,7 @@ class WeeklyMinutesBarChart extends StatelessWidget {
                         Text(
                           '${minutes[i]} min',
                           style: TextStyle(
-                            fontSize: 10.sp,
+                            fontSize: 8.sp,
                             color: Colors.black54,
                             overflow: TextOverflow.ellipsis,
                           ),
