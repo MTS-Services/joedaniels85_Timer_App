@@ -14,8 +14,11 @@ class ChangePasswordScreen extends StatefulWidget {
 
 class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
   final TextEditingController passwordController = TextEditingController();
-  final TextEditingController confirmPasswordController = TextEditingController();
-  final ChangePasswordController controller = Get.put(ChangePasswordController());
+  final TextEditingController confirmPasswordController =
+      TextEditingController();
+  final ChangePasswordController controller = Get.put(
+    ChangePasswordController(),
+  );
 
   @override
   Widget build(BuildContext context) {
@@ -29,24 +32,25 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Text(
-                    "Create a new Password ",
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      fontSize: 18.sp,
-                    ),
+                    "Create a new Password",
+                    style: Theme.of(
+                      context,
+                    ).textTheme.bodyMedium?.copyWith(fontSize: 18.sp),
                   ),
                   SizedBox(height: 8.h),
                   Text(
                     "Your new password must be different from \npreviously used passwords.",
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      fontSize: 14.sp,
-                    ),
+                    style: Theme.of(
+                      context,
+                    ).textTheme.bodySmall?.copyWith(fontSize: 14.sp),
                     textAlign: TextAlign.center,
                   ),
                   SizedBox(height: 50.h),
 
-                  // New Password
+                  // 🔹 New Password Field
                   TextFormField(
                     controller: passwordController,
+                    obscureText: true,
                     decoration: InputDecoration(
                       hintText: "New Password",
                       contentPadding: EdgeInsets.symmetric(
@@ -57,9 +61,10 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                   ),
                   SizedBox(height: 15.h),
 
-                  // Confirm Password
+                  // 🔹 Confirm Password Field
                   TextFormField(
                     controller: confirmPasswordController,
+                    obscureText: true,
                     decoration: InputDecoration(
                       hintText: "Confirm Password",
                       contentPadding: EdgeInsets.symmetric(
@@ -67,24 +72,28 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                         horizontal: 12.w,
                       ),
                     ),
-                    obscureText: true,
                   ),
 
                   SizedBox(height: 30.h),
 
-                  SizedBox(
-                    width: double.infinity,
-                    height: 48.h,
-                    child: ElevatedButton(
-                      onPressed: () {
-                        handleChangePassword(context);
-                      },
-                      child: Text(
-                        "Reset Password",
-                        style: TextStyle(fontSize: 16.sp),
-                      ),
-                    ),
-                  ),
+                  // 🔹 Submit Button / Loading Indicator
+                  Obx(() {
+                    return SizedBox(
+                      width: double.infinity,
+                      height: 48.h,
+                      child: controller.isLoading.value
+                          ? const Center(child: CircularProgressIndicator())
+                          : ElevatedButton(
+                              onPressed: () {
+                                handleChangePassword(context);
+                              },
+                              child: Text(
+                                "Reset Password",
+                                style: TextStyle(fontSize: 16.sp),
+                              ),
+                            ),
+                    );
+                  }),
                 ],
               ),
             ),
@@ -94,6 +103,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
     );
   }
 
+  // 🔹 Handle Change Password Logic
   Future<void> handleChangePassword(BuildContext context) async {
     final newPassword = passwordController.text.trim();
     final confirmPassword = confirmPasswordController.text.trim();
@@ -126,10 +136,12 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
       return;
     }
 
+    controller.isLoading.value = true;
     final isSuccess = await controller.changePassword(newPassword);
+    controller.isLoading.value = false;
 
-    if (isSuccess) {
-      // Success case
+    if (!isSuccess) {
+
       showSimpleSnackBar(
         context,
         "Password changed successfully!",
@@ -138,7 +150,6 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
       );
       Get.offAllNamed(AppRoutes.signInScreen);
     } else {
-      // Failure case
       showSimpleSnackBar(
         context,
         "Failed to change password",

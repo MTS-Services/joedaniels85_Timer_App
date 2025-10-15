@@ -22,10 +22,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
         final file = imageController.imageFile.value;
         final rawProfilePic = profileController.profileList.value?.profilePic;
         final name = profileController.profileList.value?.name ?? "User Name";
-
-        // Clean path
         final profilePic = rawProfilePic?.replaceAll("'", "").trim() ?? "";
-
         ImageProvider? imageProvider;
 
         if (file != null) {

@@ -24,7 +24,7 @@ class App extends StatelessWidget {
               : AppRoutes.signInScreen,
           getPages: AppPages.routes,
           theme: ThemeData(
-            scaffoldBackgroundColor: const Color(0xFFF6F8FB),
+            scaffoldBackgroundColor: Colors.white,
             textTheme: _buildTextTheme(),
             inputDecorationTheme: _buildInputDecorationTheme(),
             elevatedButtonTheme: _buildElevatedButtonThemeData(),

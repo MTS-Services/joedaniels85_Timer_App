@@ -77,7 +77,7 @@ class OtpVarificationScreen extends StatelessWidget {
                     width: double.infinity,
                     child: Obx(
                       () => otpVaryController.isLoading.value
-                          ? CircularProgressIndicator()
+                          ? Center(child: CircularProgressIndicator())
                           : ElevatedButton(
                               onPressed: () {
                                 handleOtpVerify(context);
