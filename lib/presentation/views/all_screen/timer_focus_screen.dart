@@ -11,11 +11,14 @@ class TimerFocusScreen extends StatelessWidget {
 
   final ActivitiesController activitiesController = Get.find<ActivitiesController>();
   final TimerController timerController = Get.put(TimerController());
-  final List<int> durations = [15, 30, 45, 60];
+
+  final RxList<int> durations = <int>[].obs; // Custom durations added by user
+  final RxInt selectedDuration = 0.obs; // 🔹 Currently selected duration (in minutes)
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+
     return Scaffold(
       body: SafeArea(
         child: Padding(
@@ -26,42 +29,132 @@ class TimerFocusScreen extends StatelessWidget {
               Text("Focus Timer", style: theme.textTheme.headlineMedium),
               Text("Choose your screen-free duration", style: theme.textTheme.bodySmall),
               const SizedBox(height: 30),
+
+              /// 🕒 Duration Selector (Dynamic)
               SizedBox(
-                height: 40.h,
-                child:  ListView.builder(
+                height: 50.h,
+                child: Obx(() => ListView.builder(
                   scrollDirection: Axis.horizontal,
-                  itemCount: durations.length,
+                  itemCount: durations.length + 1,
                   itemBuilder: (context, index) {
-                    final minutes = durations[index];
-                    final isSelected =
-                        timerController.remainingSeconds.value == minutes * 60;
-                    return Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 5),
-                      child: GestureDetector(
-                        onTap: () => timerController.resetTimer(minutes),
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 20),
-                          decoration: BoxDecoration(
-                            color: isSelected ? Colors.black : Colors.white,
-                            borderRadius: BorderRadius.circular(8),
-                            border: Border.all(color: Colors.black, width: 1.5),
-                          ),
-                          child: Center(
-                            child: Text(
-                              "$minutes min",
-                              style: theme.textTheme.bodySmall!.copyWith(
-                                fontWeight: FontWeight.bold,
-                                color: isSelected ? Colors.white : Colors.black,
+                    if (index == durations.length) {
+                      // ➕ Add Custom Duration Button
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 5),
+                        child: GestureDetector(
+                          onTap: () async {
+                            final controller = TextEditingController();
+                            final result = await showDialog<int>(
+                              context: context,
+                              builder: (context) => AlertDialog(
+                                title: const Text("Add Custom Duration"),
+                                content: TextField(
+                                  controller: controller,
+                                  keyboardType: TextInputType.number,
+                                  decoration: const InputDecoration(
+                                    labelText: "Enter minutes",
+                                    hintText: "e.g. 25",
+                                  ),
+                                ),
+                                actions: [
+                                  TextButton(
+                                    onPressed: () => Navigator.pop(context),
+                                    child: const Text("Cancel"),
+                                  ),
+                                  ElevatedButton(
+                                    onPressed: () {
+                                      final minutes = int.tryParse(controller.text);
+                                      if (minutes != null && minutes > 0) {
+                                        Navigator.pop(context, minutes);
+                                      }
+                                    },
+                                    child: const Text("Add"),
+                                  ),
+                                ],
                               ),
+                            );
+
+                            if (result != null && !durations.contains(result)) {
+                              durations.add(result);
+                            }
+                          },
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 20),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(8),
+                              border: Border.all(color: Colors.black, width: 1.5),
+                            ),
+                            child: const Center(
+                              child: Icon(Icons.add, color: Colors.black),
                             ),
                           ),
                         ),
+                      );
+                    }
+
+                    // 🔸 Normal Duration Button
+                    final minutes = durations[index];
+                    final isSelected = selectedDuration.value == minutes;
+
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 5),
+                      child: Stack(
+                        alignment: Alignment.topRight,
+                        children: [
+                          GestureDetector(
+                            onTap: () {
+                              selectedDuration.value = minutes;
+                              timerController.remainingSeconds.value = minutes * 60;
+                            },
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                              decoration: BoxDecoration(
+                                color: isSelected ? Colors.black : Colors.white,
+                                borderRadius: BorderRadius.circular(8),
+                                border: Border.all(color: Colors.black, width: 1.5),
+                              ),
+                              child: Center(
+                                child: Text(
+                                  "$minutes min",
+                                  style: theme.textTheme.bodySmall!.copyWith(
+                                    fontWeight: FontWeight.bold,
+                                    color: isSelected ? Colors.white : Colors.black,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+
+                          // ❌ Delete Button
+                          Positioned(
+                            right: -5,
+                            top: -5,
+                            child: GestureDetector(
+                              onTap: () => durations.removeAt(index),
+                              child: Container(
+                                decoration: const BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  color: Colors.red,
+                                ),
+                                padding: const EdgeInsets.all(3),
+                                child: const Icon(
+                                  Icons.close,
+                                  size: 14,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                     );
                   },
-                )
+                )),
               ),
+
               const SizedBox(height: 80),
+
               Stack(
                 alignment: Alignment.center,
                 children: [
@@ -82,14 +175,15 @@ class TimerFocusScreen extends StatelessWidget {
                         timerController.isRunning.value
                             ? "Focusing..."
                             : "Ready to start",
-                        style: theme.textTheme.bodySmall!
-                            .copyWith(color: Colors.white),
+                        style: theme.textTheme.bodySmall!.copyWith(color: Colors.white),
                       )),
                     ],
                   ),
                 ],
               ),
+
               const SizedBox(height: 80),
+
               Obx(() {
                 final activityId = activitiesController.activitiesList.isNotEmpty
                     ? activitiesController.activitiesList[0].id
@@ -106,8 +200,7 @@ class TimerFocusScreen extends StatelessWidget {
                         ? () {
                       timerController.startTimer(
                         currentActivityId: activityId!,
-                        durationInSec:
-                        timerController.remainingSeconds.value,
+                        durationInSec: timerController.remainingSeconds.value,
                       );
                       Get.toNamed(AppRoutes.pauseActiveScreen);
                     }
@@ -117,7 +210,9 @@ class TimerFocusScreen extends StatelessWidget {
                   ),
                 );
               }),
+
               const SizedBox(height: 15),
+
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton.icon(
@@ -130,7 +225,8 @@ class TimerFocusScreen extends StatelessWidget {
                     ),
                   ),
                   onPressed: () {
-                    timerController.resetTimer(8 * 60);
+                    selectedDuration.value = 480;
+                    timerController.remainingSeconds.value = 8 * 60 * 60;
                   },
                   icon: Image.asset(AssetPath.moonIcon, width: 25),
                   label: const Text("Until bedtime (8h)"),
