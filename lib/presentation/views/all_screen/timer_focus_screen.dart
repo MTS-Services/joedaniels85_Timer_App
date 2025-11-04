@@ -12,7 +12,9 @@ class TimerFocusScreen extends StatelessWidget {
   final ActivitiesController activitiesController = Get.find<ActivitiesController>();
   final TimerController timerController = Get.put(TimerController());
 
-  final RxList<int> durations = <int>[].obs;
+  // Initialize with some default durations and make it persistent
+  final RxList<int> defaultDurations = <int>[5, 10, 15, 20, 25, 30].obs;
+  final RxList<int> customDurations = <int>[].obs;
 
   @override
   Widget build(BuildContext context) {
@@ -33,9 +35,10 @@ class TimerFocusScreen extends StatelessWidget {
                 height: 50.h,
                 child: Obx(() => ListView.builder(
                   scrollDirection: Axis.horizontal,
-                  itemCount: durations.length + 1,
+                  itemCount: defaultDurations.length + customDurations.length + 1,
                   itemBuilder: (context, index) {
-                    if (index == durations.length) {
+                    // Custom duration button (last item)
+                    if (index == defaultDurations.length + customDurations.length) {
                       return Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 5),
                         child: GestureDetector(
@@ -72,8 +75,10 @@ class TimerFocusScreen extends StatelessWidget {
                               ),
                             );
 
-                            if (result != null && !durations.contains(result)) {
-                              durations.add(result);
+                            if (result != null &&
+                                !defaultDurations.contains(result) &&
+                                !customDurations.contains(result)) {
+                              customDurations.add(result);
                             }
                           },
                           child: Container(
@@ -98,7 +103,18 @@ class TimerFocusScreen extends StatelessWidget {
                       );
                     }
 
-                    final minutes = durations[index];
+                    // Get the actual duration value
+                    final int minutes;
+                    final bool isCustomDuration;
+
+                    if (index < defaultDurations.length) {
+                      minutes = defaultDurations[index];
+                      isCustomDuration = false;
+                    } else {
+                      minutes = customDurations[index - defaultDurations.length];
+                      isCustomDuration = true;
+                    }
+
                     final isSelected =
                         timerController.remainingSeconds.value ==
                             minutes * 60;
@@ -135,25 +151,30 @@ class TimerFocusScreen extends StatelessWidget {
                             ),
                           ),
 
-                          Positioned(
-                            right: -5,
-                            top: -5,
-                            child: GestureDetector(
-                              onTap: () => durations.removeAt(index),
-                              child: Container(
-                                decoration: const BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  color: Colors.red,
-                                ),
-                                padding: const EdgeInsets.all(3),
-                                child: const Icon(
-                                  Icons.close,
-                                  size: 14,
-                                  color: Colors.white,
+                          // Delete button - only shown for custom durations
+                          if (isCustomDuration)
+                            Positioned(
+                              right: -5,
+                              top: -5,
+                              child: GestureDetector(
+                                onTap: () {
+                                  final customIndex = index - defaultDurations.length;
+                                  customDurations.removeAt(customIndex);
+                                },
+                                child: Container(
+                                  decoration: const BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    color: Colors.red,
+                                  ),
+                                  padding: const EdgeInsets.all(3),
+                                  child: const Icon(
+                                    Icons.close,
+                                    size: 14,
+                                    color: Colors.white,
+                                  ),
                                 ),
                               ),
                             ),
-                          ),
                         ],
                       ),
                     );
