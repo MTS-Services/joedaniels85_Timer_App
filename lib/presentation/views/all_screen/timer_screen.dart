@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import 'package:joedaniels85_timer_app/core/constants/asset_path.dart';
 import '../../../routes/app_route.dart';
 import '../../viewmodels/controller/progress_controller.dart';
+import '../../widgets/custom_time_ticker.dart';
 import '../../widgets/start_card.dart';
 import '../../widgets/task_card.dart';
 
@@ -38,6 +39,13 @@ class TimerScreen extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+
+                    // CustomTimePicker(
+                    //   onTimeSelected: (time) {
+                    //     print("Selected Time: ${time.format(context)}");
+                    //   },
+                    // ),
+
                     SizedBox(height: 10.h),
                     _buildStartCard(),
                     SizedBox(height: 15.h),

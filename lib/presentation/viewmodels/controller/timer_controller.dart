@@ -17,7 +17,6 @@ class TimerController extends GetxController {
     elapsedSeconds.value = 0;
     isRunning.value = true;
 
-    // ✅ Save activityId to SharedPreferences
     SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefs.setString('activity_id', currentActivityId);
     print("✅ Saved activityId: $currentActivityId");

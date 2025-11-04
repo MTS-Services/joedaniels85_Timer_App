@@ -22,12 +22,6 @@ class ActivitiesController extends GetxController {
       SharedPreferences prefs = await SharedPreferences.getInstance();
       String? token = prefs.getString('auth_token');
 
-      if (token == null || token.isEmpty) {
-        print("No API token found. Please login first.");
-        isLoading.value = false;
-        return;
-      }
-
       print("Using API Token: $token");
       print("Sending GET request to: ${Urls.getActivities}");
 
@@ -36,7 +30,7 @@ class ActivitiesController extends GetxController {
         token: token,
       );
 
-      // print("response ==  $response");
+       print("response ==  $response");
 
       if (response != null && response['data'] != null) {
         final data = response['data'] as List;

@@ -22,13 +22,22 @@ class _PauseActiveScreenState extends State<PauseActiveScreen>
 
   final TimerController timerController = Get.put(TimerController());
   final DurationController durationController = Get.put(DurationController());
-  final ActivitiesController activitiesController = Get.put(ActivitiesController());
+  final ActivitiesController activitiesController =
+  Get.put(ActivitiesController());
 
   @override
   void initState() {
     super.initState();
-    activitiesController.fetchActivities();
 
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      await activitiesController.fetchActivities();
+      print("✅ Activities fetched: ${activitiesController.activitiesList.length}");
+      if (activitiesController.activitiesList.isNotEmpty) {
+        print("First activity ID: ${activitiesController.activitiesList.first.id}");
+      }
+    });
+
+    // 🔹 Ripple animation controller
     final rippleDuration = timerController.remainingSeconds.value > 0
         ? timerController.remainingSeconds.value
         : 1;
@@ -38,11 +47,13 @@ class _PauseActiveScreenState extends State<PauseActiveScreen>
       duration: Duration(seconds: rippleDuration),
     )..forward();
 
+    // 🔹 Dash animation controller
     _dashShiftCtrl = AnimationController(
       vsync: this,
       duration: const Duration(seconds: 8),
     )..repeat();
 
+    // 🔹 টাইম শেষ হলে অ্যানিমেশন বন্ধ করো
     ever(timerController.remainingSeconds, (time) {
       if (time == 0) {
         _rippleCtrl.stop();
@@ -59,7 +70,6 @@ class _PauseActiveScreenState extends State<PauseActiveScreen>
   }
 
   String getRemainingMinutes() {
-    // প্রতি মিনিট increment দেখানোর জন্য
     final minutes = (timerController.remainingSeconds.value / 60).ceil();
     return minutes.toString();
   }
@@ -69,23 +79,28 @@ class _PauseActiveScreenState extends State<PauseActiveScreen>
     return Scaffold(
       backgroundColor: Colors.black,
       body: SafeArea(
-        child: Stack(
-          alignment: Alignment.center,
-          children: [
-            AnimatedBuilder(
-              animation: Listenable.merge([_rippleCtrl, _dashShiftCtrl]),
-              builder: (context, _) {
-                return CustomPaint(
-                  size: MediaQuery.of(context).size,
-                  painter: _DashedRipplesPainter(
-                    progress: _rippleCtrl.value,
-                    dashShift: _dashShiftCtrl.value,
-                  ),
-                );
-              },
-            ),
-            Obx(
-                  () => Text(
+        child: Obx(() {
+          final isActivitiesLoading = activitiesController.isLoading.value;
+          final activities = activitiesController.activitiesList;
+
+          return Stack(
+            alignment: Alignment.center,
+            children: [
+              AnimatedBuilder(
+                animation: Listenable.merge([_rippleCtrl, _dashShiftCtrl]),
+                builder: (context, _) {
+                  return CustomPaint(
+                    size: MediaQuery.of(context).size,
+                    painter: _DashedRipplesPainter(
+                      progress: _rippleCtrl.value,
+                      dashShift: _dashShiftCtrl.value,
+                    ),
+                  );
+                },
+              ),
+
+              /// ⏳ Time text
+              Text(
                 "Your Pause\n${getRemainingMinutes()} min left",
                 style: TextStyle(
                   color: Colors.white,
@@ -94,48 +109,65 @@ class _PauseActiveScreenState extends State<PauseActiveScreen>
                 ),
                 textAlign: TextAlign.center,
               ),
-            ),
-            Positioned(
-              bottom: 90.h,
-              child: SizedBox(
-                width: 150.w,
-                height: 50.h,
-                child: Obx(
-                      () => ElevatedButton(
+
+              /// 🔘 Stop Button
+              Positioned(
+                bottom: 90.h,
+                child: SizedBox(
+                  width: 150.w,
+                  height: 50.h,
+                  child: ElevatedButton(
                     style: ElevatedButton.styleFrom(
                       shape: ContinuousRectangleBorder(
                         borderRadius: BorderRadius.circular(50.r),
                       ),
                     ),
-                    onPressed: durationController.isLoading.value
+                    onPressed: (durationController.isLoading.value ||
+                        isActivitiesLoading)
                         ? null
                         : () async {
                       timerController.stopTimer();
-                      if (activitiesController.activitiesList.isEmpty ||
-                          activitiesController.activitiesList[0].id.isEmpty) {
+
+                      // 🔹 এখন valid activity check
+                      if (activities.isEmpty) {
                         Get.snackbar(
-                          "Error",
-                          "No valid activity found!",
+                          "No Activity",
+                          "No activity found! Please start one first.",
                           snackPosition: SnackPosition.BOTTOM,
+                          backgroundColor: Colors.redAccent,
+                          colorText: Colors.white,
                         );
                         return;
                       }
-                      final activityId =
-                          activitiesController.activitiesList[0].id;
+
+                      final activity = activities.first;
+
+                      if (activity.id.isEmpty) {
+                        Get.snackbar(
+                          "Invalid Data",
+                          "Activity ID is missing. Try restarting the session.",
+                          snackPosition: SnackPosition.BOTTOM,
+                          backgroundColor: Colors.redAccent,
+                          colorText: Colors.white,
+                        );
+                        return;
+                      }
 
                       final durationModel = DurationModel(
-                        activityId: activityId,
+                        activityId: activity.id,
                         duration: timerController.getElapsedSeconds(),
                       );
 
-                      bool success =
-                      await durationController.sendDuration(durationModel);
+                      bool success = await durationController
+                          .sendDuration(durationModel);
 
                       if (success) {
                         Get.snackbar(
                           "Success",
                           "Duration saved successfully!",
                           snackPosition: SnackPosition.BOTTOM,
+                          backgroundColor: Colors.green,
+                          colorText: Colors.white,
                         );
                         Get.toNamed(AppRoutes.pauseFeedbackScreen);
                       } else {
@@ -143,33 +175,40 @@ class _PauseActiveScreenState extends State<PauseActiveScreen>
                           "Error",
                           "Failed to save duration. Try again.",
                           snackPosition: SnackPosition.BOTTOM,
+                          backgroundColor: Colors.redAccent,
+                          colorText: Colors.white,
                         );
                       }
                     },
-                    child: durationController.isLoading.value
-                        ? SizedBox(
-                      height: 20.h,
-                      width: 20.w,
-                      child: CircularProgressIndicator(
-                        color: Colors.white,
-                        strokeWidth: 2.w,
-                      ),
-                    )
-                        : Text(
-                      "Stop",
-                      style: TextStyle(fontSize: 16.sp),
-                    ),
+                    child: Obx(() {
+                      final isLoading = durationController.isLoading.value ||
+                          isActivitiesLoading;
+                      return isLoading
+                          ? SizedBox(
+                        height: 20.h,
+                        width: 20.w,
+                        child: CircularProgressIndicator(
+                          color: Colors.white,
+                          strokeWidth: 2.w,
+                        ),
+                      )
+                          : Text(
+                        "Stop",
+                        style: TextStyle(fontSize: 16.sp),
+                      );
+                    }),
                   ),
                 ),
               ),
-            ),
-          ],
-        ),
+            ],
+          );
+        }),
       ),
     );
   }
 }
 
+/// 🎨 Painter (unchanged)
 class _DashedRipplesPainter extends CustomPainter {
   final double progress;
   final double dashShift;
@@ -183,8 +222,10 @@ class _DashedRipplesPainter extends CustomPainter {
 
     final radii = [
       baseRadius * (1.00 + 0.10 * math.sin(progress * 2 * math.pi)),
-      baseRadius * 1.55 * (1.00 + 0.08 * math.sin((progress + .33) * 2 * math.pi)),
-      baseRadius * 2.10 * (1.00 + 0.06 * math.sin((progress + .66) * 2 * math.pi)),
+      baseRadius * 1.55 *
+          (1.00 + 0.08 * math.sin((progress + .33) * 2 * math.pi)),
+      baseRadius * 2.10 *
+          (1.00 + 0.06 * math.sin((progress + .66) * 2 * math.pi)),
     ];
 
     for (int i = 0; i < radii.length; i++) {
@@ -228,6 +269,7 @@ class _DashedRipplesPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant _DashedRipplesPainter oldDelegate) {
-    return oldDelegate.progress != progress || oldDelegate.dashShift != dashShift;
+    return oldDelegate.progress != progress ||
+        oldDelegate.dashShift != dashShift;
   }
 }

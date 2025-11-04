@@ -71,7 +71,7 @@ class AppPages {
     ),
     GetPage(
       name: AppRoutes.pauseActiveScreen,
-      page: () => const PauseActiveScreen(),
+      page: () =>  PauseActiveScreen(),
     ),
     GetPage(
       name: AppRoutes.pauseFeedbackScreen,

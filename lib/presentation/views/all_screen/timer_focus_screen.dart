@@ -12,8 +12,7 @@ class TimerFocusScreen extends StatelessWidget {
   final ActivitiesController activitiesController = Get.find<ActivitiesController>();
   final TimerController timerController = Get.put(TimerController());
 
-  final RxList<int> durations = <int>[].obs; // Custom durations added by user
-  final RxInt selectedDuration = 0.obs; // 🔹 Currently selected duration (in minutes)
+  final RxList<int> durations = <int>[].obs;
 
   @override
   Widget build(BuildContext context) {
@@ -30,7 +29,6 @@ class TimerFocusScreen extends StatelessWidget {
               Text("Choose your screen-free duration", style: theme.textTheme.bodySmall),
               const SizedBox(height: 30),
 
-              /// 🕒 Duration Selector (Dynamic)
               SizedBox(
                 height: 50.h,
                 child: Obx(() => ListView.builder(
@@ -38,7 +36,6 @@ class TimerFocusScreen extends StatelessWidget {
                   itemCount: durations.length + 1,
                   itemBuilder: (context, index) {
                     if (index == durations.length) {
-                      // ➕ Add Custom Duration Button
                       return Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 5),
                         child: GestureDetector(
@@ -63,7 +60,8 @@ class TimerFocusScreen extends StatelessWidget {
                                   ),
                                   ElevatedButton(
                                     onPressed: () {
-                                      final minutes = int.tryParse(controller.text);
+                                      final minutes =
+                                      int.tryParse(controller.text);
                                       if (minutes != null && minutes > 0) {
                                         Navigator.pop(context, minutes);
                                       }
@@ -79,23 +77,31 @@ class TimerFocusScreen extends StatelessWidget {
                             }
                           },
                           child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 20),
+                            padding:
+                            const EdgeInsets.symmetric(horizontal: 10 , vertical: 8),
                             decoration: BoxDecoration(
                               color: Colors.white,
                               borderRadius: BorderRadius.circular(8),
-                              border: Border.all(color: Colors.black, width: 1.5),
+                              border:
+                              Border.all(color: Colors.black, width: 1.5),
                             ),
                             child: const Center(
-                              child: Icon(Icons.add, color: Colors.black),
+                              child: Row(
+                                children: [
+                                  Text("custom " , style: TextStyle(fontSize: 16),),
+                                  Icon(Icons.add, color: Colors.black),
+                                ],
+                              ),
                             ),
                           ),
                         ),
                       );
                     }
 
-                    // 🔸 Normal Duration Button
                     final minutes = durations[index];
-                    final isSelected = selectedDuration.value == minutes;
+                    final isSelected =
+                        timerController.remainingSeconds.value ==
+                            minutes * 60;
 
                     return Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 5),
@@ -103,30 +109,32 @@ class TimerFocusScreen extends StatelessWidget {
                         alignment: Alignment.topRight,
                         children: [
                           GestureDetector(
-                            onTap: () {
-                              selectedDuration.value = minutes;
-                              timerController.remainingSeconds.value = minutes * 60;
-                            },
+                            onTap: () => timerController.resetTimer(minutes),
                             child: Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 20, vertical: 10),
                               decoration: BoxDecoration(
-                                color: isSelected ? Colors.black : Colors.white,
+                                color: isSelected
+                                    ? Colors.black
+                                    : Colors.white,
                                 borderRadius: BorderRadius.circular(8),
-                                border: Border.all(color: Colors.black, width: 1.5),
+                                border: Border.all(
+                                    color: Colors.black, width: 1.5),
                               ),
                               child: Center(
                                 child: Text(
                                   "$minutes min",
                                   style: theme.textTheme.bodySmall!.copyWith(
                                     fontWeight: FontWeight.bold,
-                                    color: isSelected ? Colors.white : Colors.black,
+                                    color: isSelected
+                                        ? Colors.white
+                                        : Colors.black,
                                   ),
                                 ),
                               ),
                             ),
                           ),
 
-                          // ❌ Delete Button
                           Positioned(
                             right: -5,
                             top: -5,
@@ -154,7 +162,6 @@ class TimerFocusScreen extends StatelessWidget {
               ),
 
               const SizedBox(height: 80),
-
               Stack(
                 alignment: Alignment.center,
                 children: [
@@ -175,31 +182,30 @@ class TimerFocusScreen extends StatelessWidget {
                         timerController.isRunning.value
                             ? "Focusing..."
                             : "Ready to start",
-                        style: theme.textTheme.bodySmall!.copyWith(color: Colors.white),
+                        style: theme.textTheme.bodySmall!
+                            .copyWith(color: Colors.white),
                       )),
                     ],
                   ),
                 ],
               ),
-
               const SizedBox(height: 80),
 
+              /// ▶️ Start Session Button
               Obx(() {
-                final activityId = activitiesController.activitiesList.isNotEmpty
-                    ? activitiesController.activitiesList[0].id
-                    : null;
-
-                final isButtonEnabled = activityId != null &&
-                    activityId.isNotEmpty &&
-                    timerController.remainingSeconds.value > 0;
+                final isButtonEnabled = timerController.remainingSeconds.value > 0;
 
                 return SizedBox(
                   width: double.infinity,
                   child: ElevatedButton.icon(
                     onPressed: isButtonEnabled
                         ? () {
+                      final activityId = activitiesController.activitiesList.isNotEmpty
+                          ? activitiesController.activitiesList[0].id
+                          : "default_activity";
+
                       timerController.startTimer(
-                        currentActivityId: activityId!,
+                        currentActivityId: activityId,
                         durationInSec: timerController.remainingSeconds.value,
                       );
                       Get.toNamed(AppRoutes.pauseActiveScreen);
@@ -210,28 +216,6 @@ class TimerFocusScreen extends StatelessWidget {
                   ),
                 );
               }),
-
-              const SizedBox(height: 15),
-
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton.icon(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.white,
-                    foregroundColor: Colors.black,
-                    side: const BorderSide(color: Colors.black, width: 2),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                  ),
-                  onPressed: () {
-                    selectedDuration.value = 480;
-                    timerController.remainingSeconds.value = 8 * 60 * 60;
-                  },
-                  icon: Image.asset(AssetPath.moonIcon, width: 25),
-                  label: const Text("Until bedtime (8h)"),
-                ),
-              ),
               const SizedBox(height: 30),
             ],
           ),
