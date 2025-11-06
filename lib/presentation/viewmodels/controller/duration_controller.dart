@@ -15,7 +15,7 @@ class DurationController extends GetxController {
     try {
       SharedPreferences prefs = await SharedPreferences.getInstance();
       final token = prefs.getString('auth_token');
-
+      print("token======$token");
       if (token == null) {
         print("No token found! Please login first.");
         return false;

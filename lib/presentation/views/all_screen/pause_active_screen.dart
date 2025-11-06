@@ -53,11 +53,46 @@ class _PauseActiveScreenState extends State<PauseActiveScreen>
       duration: const Duration(seconds: 8),
     )..repeat();
 
-    // 🔹 টাইম শেষ হলে অ্যানিমেশন বন্ধ করো
-    ever(timerController.remainingSeconds, (time) {
+    // 🔹 টাইম শেষ হলে অ্যানিমেশন বন্ধ + অটো স্ক্রিন পরিবর্তন
+    ever(timerController.remainingSeconds, (time) async {
       if (time == 0) {
+        print("⏱ Timer ended — Auto navigating to PauseFeedbackScreen...");
         _rippleCtrl.stop();
         _dashShiftCtrl.stop();
+
+        if (activitiesController.activitiesList.isNotEmpty) {
+          final activity = activitiesController.activitiesList.first;
+
+          if (activity.id.isNotEmpty) {
+            final durationModel = DurationModel(
+              activityId: activity.id,
+              duration: timerController.getElapsedSeconds(),
+            );
+
+            bool success =
+            await durationController.sendDuration(durationModel);
+
+            if (success) {
+              Get.offAllNamed(AppRoutes.pauseFeedbackScreen);
+            } else {
+              Get.snackbar(
+                "Error",
+                "Failed to save duration automatically.",
+                snackPosition: SnackPosition.BOTTOM,
+                backgroundColor: Colors.redAccent,
+                colorText: Colors.white,
+              );
+            }
+          }
+        } else {
+          Get.snackbar(
+            "No Activity",
+            "No active session found when timer ended.",
+            snackPosition: SnackPosition.BOTTOM,
+            backgroundColor: Colors.redAccent,
+            colorText: Colors.white,
+          );
+        }
       }
     });
   }
@@ -110,7 +145,7 @@ class _PauseActiveScreenState extends State<PauseActiveScreen>
                 textAlign: TextAlign.center,
               ),
 
-              /// 🔘 Stop Button
+              /// 🛑 Stop button (manual stop option)
               Positioned(
                 bottom: 90.h,
                 child: SizedBox(
@@ -128,7 +163,6 @@ class _PauseActiveScreenState extends State<PauseActiveScreen>
                         : () async {
                       timerController.stopTimer();
 
-                      // 🔹 এখন valid activity check
                       if (activities.isEmpty) {
                         Get.snackbar(
                           "No Activity",
@@ -208,7 +242,7 @@ class _PauseActiveScreenState extends State<PauseActiveScreen>
   }
 }
 
-/// 🎨 Painter (unchanged)
+/// 🎨 Ripple Painter
 class _DashedRipplesPainter extends CustomPainter {
   final double progress;
   final double dashShift;
@@ -222,9 +256,11 @@ class _DashedRipplesPainter extends CustomPainter {
 
     final radii = [
       baseRadius * (1.00 + 0.10 * math.sin(progress * 2 * math.pi)),
-      baseRadius * 1.55 *
+      baseRadius *
+          1.55 *
           (1.00 + 0.08 * math.sin((progress + .33) * 2 * math.pi)),
-      baseRadius * 2.10 *
+      baseRadius *
+          2.10 *
           (1.00 + 0.06 * math.sin((progress + .66) * 2 * math.pi)),
     ];
 

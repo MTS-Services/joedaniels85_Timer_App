@@ -233,7 +233,7 @@ class TimerFocusScreen extends StatelessWidget {
                     }
                         : null,
                     icon: const Icon(Icons.play_arrow, color: Colors.white),
-                    label: const Text("Start Session"),
+                    label: const Text("Pause"),
                   ),
                 );
               }),
