@@ -2,6 +2,7 @@ class Urls {
   static String baseUrl = 'https://joedaniels85.mtscorporate.com/api';
 
   static String registration = '$baseUrl/auth/registration';
+  static String googleAuthentication = '$baseUrl/auth/google-register';
   static String completeRegistration = '$baseUrl/auth/registration/complete';
   static String signIn = '$baseUrl/auth/login';
   static String sendMail = '$baseUrl/auth/send-code';

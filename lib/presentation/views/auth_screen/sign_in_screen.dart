@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:joedaniels85_timer_app/core/constants/app_colors.dart';
@@ -59,7 +60,9 @@ class _SignInScreenState extends State<SignInScreen> {
                       hintText: "Password",
                       suffixIcon: IconButton(
                         icon: Icon(
-                          _obscurePassword ? Icons.visibility : Icons.visibility_off,
+                          _obscurePassword
+                              ? Icons.visibility
+                              : Icons.visibility_off,
                         ),
                         onPressed: () {
                           setState(() {
@@ -92,9 +95,9 @@ class _SignInScreenState extends State<SignInScreen> {
                       return signUPController.isLoading.value
                           ? const Center(child: CircularProgressIndicator())
                           : ElevatedButton(
-                        onPressed: () => handleSignIn(context),
-                        child: const Text("Sign In"),
-                      );
+                              onPressed: () => handleSignIn(context),
+                              child: const Text("Sign In"),
+                            );
                     }),
                   ),
                   const SizedBox(height: 10),
@@ -164,6 +167,7 @@ class _SignInScreenState extends State<SignInScreen> {
   }
 
   Widget _googleSignInButton() {
+    final FirebaseAuth auth = FirebaseAuth.instance;
     return SizedBox(
       width: double.infinity,
       child: ElevatedButton.icon(
@@ -176,14 +180,32 @@ class _SignInScreenState extends State<SignInScreen> {
         onPressed: () async {
           try {
             bool isSignedIn = await firebaseServices.googleSignIn();
+
             if (isSignedIn) {
-              Get.offAllNamed(AppRoutes.introScreen);
-              showSimpleSnackBar(
-                context,
-                "Signed in successfully!",
-                bgColor: Colors.green,
-                textColor: Colors.white,
-              );
+              final user = auth.currentUser;
+              final name = user?.displayName ?? "Google User";
+              final email = user?.email ?? "unknown@gmail.com";
+
+              // Call your backend API
+              final backendAuthSuccess = await firebaseServices
+                  .handleGoogleBackendAuth(name, email);
+
+              if (backendAuthSuccess) {
+                Get.offAllNamed(AppRoutes.introScreen);
+                showSimpleSnackBar(
+                  context,
+                  "Signed in successfully!",
+                  bgColor: Colors.green,
+                  textColor: Colors.white,
+                );
+              } else {
+                showSimpleSnackBar(
+                  context,
+                  "Failed to connect with server",
+                  bgColor: Colors.red,
+                  textColor: Colors.white,
+                );
+              }
             } else {
               showSimpleSnackBar(
                 context,
@@ -202,6 +224,7 @@ class _SignInScreenState extends State<SignInScreen> {
             );
           }
         },
+
         icon: Image.asset(AssetPath.googleLogo, width: 25),
         label: const Text("Sign In with Google"),
       ),

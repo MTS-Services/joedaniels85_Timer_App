@@ -61,7 +61,7 @@ class ProfileScreen extends StatelessWidget {
                               shape: BoxShape.circle,
                               border: Border.all(color: Colors.grey, width: 2),
                               image: DecorationImage(
-                                image: imageProvider ?? AssetImage('assets/default_profile.png') as ImageProvider,
+                                image: imageProvider ?? Image.asset(AssetPath.defaultProfile).image,
                                 fit: BoxFit.cover,
                               ),
                             ),

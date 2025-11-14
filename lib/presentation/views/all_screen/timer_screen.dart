@@ -11,8 +11,9 @@ import '../../widgets/task_card.dart';
 class TimerScreen extends StatelessWidget {
   TimerScreen({super.key});
 
-  final UserProgressController userProgressController =
-  Get.put(UserProgressController());
+  final UserProgressController userProgressController = Get.put(
+    UserProgressController(),
+  );
 
   Future<void> _onRefresh() async {
     await userProgressController.fetchUserProgress();
@@ -24,9 +25,7 @@ class TimerScreen extends StatelessWidget {
       body: SafeArea(
         child: Obx(() {
           if (userProgressController.isLoading.value) {
-            return const Center(
-              child: CircularProgressIndicator(),
-            );
+            return const Center(child: CircularProgressIndicator());
           }
           return RefreshIndicator(
             onRefresh: _onRefresh,
@@ -34,27 +33,21 @@ class TimerScreen extends StatelessWidget {
             child: SingleChildScrollView(
               physics: const AlwaysScrollableScrollPhysics(),
               child: Padding(
-                padding:
-                EdgeInsets.symmetric(horizontal: 15.w, vertical: 15.h),
+                padding: EdgeInsets.symmetric(horizontal: 15.w, vertical: 15.h),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-
                     // CustomTimePicker(
                     //   onTimeSelected: (time) {
                     //     print("Selected Time: ${time.format(context)}");
                     //   },
                     // ),
-
                     SizedBox(height: 10.h),
                     _buildStartCard(),
                     SizedBox(height: 15.h),
                     _buildRow(),
                     SizedBox(height: 10.h),
-                    Text(
-                      "Quick Actions",
-                      style: TextStyle(fontSize: 16.sp),
-                    ),
+                    Text("Quick Actions", style: TextStyle(fontSize: 16.sp)),
                     SizedBox(height: 10.h),
                     _buildSizedBox(),
                   ],
@@ -70,9 +63,18 @@ class TimerScreen extends StatelessWidget {
   StartCard _buildStartCard() {
     return StartCard(
       titleSpans: [
-        TextSpan(text: "Ready ", style: TextStyle(fontSize: 16.sp)),
-        TextSpan(text: "to \n", style: TextStyle(fontSize: 16.sp)),
-        TextSpan(text: "start", style: TextStyle(fontSize: 16.sp)),
+        TextSpan(
+          text: "Ready ",
+          style: TextStyle(fontSize: 16.sp),
+        ),
+        TextSpan(
+          text: "to \n",
+          style: TextStyle(fontSize: 16.sp),
+        ),
+        TextSpan(
+          text: "start",
+          style: TextStyle(fontSize: 16.sp),
+        ),
       ],
       circleImage: AssetPath.circle,
       centerIcon: AssetPath.clock,
@@ -116,8 +118,12 @@ class TimerScreen extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         Obx(() {
-          final streak = userProgressController
-              .progressResponse.value?.data?.currentStreak ??
+          final streak =
+              userProgressController
+                  .progressResponse
+                  .value
+                  ?.data
+                  ?.currentStreak ??
               0;
           return Flexible(
             child: StartCard(
@@ -144,8 +150,8 @@ class TimerScreen extends StatelessWidget {
         }),
         SizedBox(width: 10.w),
         Obx(() {
-          final totalDuration = userProgressController
-              .overallStats.value?.totalDurationMinutes ??
+          final totalDuration =
+              userProgressController.overallStats.value?.totalDurationMinutes ??
               0;
           return Flexible(
             child: StartCard(

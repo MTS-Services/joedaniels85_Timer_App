@@ -28,38 +28,41 @@ class UserProfileModel {
 
 class UserData {
   String id;
-  String name;
+  String name;     
   String email;
   String? profilePic;
-  String provider;
+  String? uid;
+  String role;
   DateTime lastLogin;
   DateTime createdAt;
   DateTime updatedAt;
-  Stats stats;
+  Map<String, dynamic>? count; // From _count field
 
   UserData({
     required this.id,
     required this.name,
     required this.email,
     this.profilePic,
-    required this.provider,
+    this.uid,
+    required this.role,
     required this.lastLogin,
     required this.createdAt,
     required this.updatedAt,
-    required this.stats,
+    this.count,
   });
 
   factory UserData.fromJson(Map<String, dynamic> json) {
     return UserData(
-      id: json['id'],
-      name: json['name'],
-      email: json['email'],
+      id: json['id'] ?? '',
+      name: json['name'] ?? 'User Name', // Provide default value
+      email: json['email'] ?? '',
       profilePic: json['profile_pic'],
-      provider: json['provider'],
-      lastLogin: DateTime.parse(json['lastLogin']),
-      createdAt: DateTime.parse(json['createdAt']),
-      updatedAt: DateTime.parse(json['updatedAt']),
-      stats: Stats.fromJson(json['stats']),
+      uid: json['uid'],
+      role: json['role'] ?? 'USER',
+      lastLogin: DateTime.parse(json['lastLogin'] ?? DateTime.now().toIso8601String()),
+      createdAt: DateTime.parse(json['createdAt'] ?? DateTime.now().toIso8601String()),
+      updatedAt: DateTime.parse(json['updatedAt'] ?? DateTime.now().toIso8601String()),
+      count: json['_count'] is Map ? Map<String, dynamic>.from(json['_count']) : null,
     );
   }
 
@@ -69,11 +72,12 @@ class UserData {
       'name': name,
       'email': email,
       'profile_pic': profilePic,
-      'provider': provider,
+      'uid': uid,
+      'role': role,
       'lastLogin': lastLogin.toIso8601String(),
       'createdAt': createdAt.toIso8601String(),
       'updatedAt': updatedAt.toIso8601String(),
-      'stats': stats.toJson(),
+      '_count': count,
     };
   }
 }

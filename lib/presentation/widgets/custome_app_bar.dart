@@ -7,8 +7,12 @@ import '../viewmodels/controller/profile_image_controller.dart';
 
 class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
   final String subtitle;
-  final UserProfileController profileController = Get.put(UserProfileController());
-  final ProfileImageController imageController = Get.put(ProfileImageController());
+  final UserProfileController profileController = Get.put(
+    UserProfileController(),
+  );
+  final ProfileImageController imageController = Get.put(
+    ProfileImageController(),
+  );
 
   CustomAppBar({super.key, required this.subtitle});
 
@@ -16,6 +20,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
   Widget build(BuildContext context) {
     return AppBar(
       automaticallyImplyLeading: false,
+      backgroundColor: Colors.white,
       surfaceTintColor: Colors.transparent,
       toolbarHeight: 70.h,
       title: Obx(() {
@@ -77,10 +82,10 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
                 backgroundImage: imageProvider,
                 child: imageProvider == null
                     ? Icon(
-                  Icons.person,
-                  size: 22.r,
-                  color: Colors.grey.shade700,
-                )
+                        Icons.person,
+                        size: 22.r,
+                        color: Colors.grey.shade700,
+                      )
                     : null,
               ),
             ),

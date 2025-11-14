@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:joedaniels85_timer_app/core/constants/app_colors.dart';
@@ -129,6 +130,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
     );
   }
   Widget _customButton() {
+    final FirebaseAuth auth = FirebaseAuth.instance;
     return SizedBox(
       width: double.infinity,
       child: ElevatedButton.icon(
@@ -138,8 +140,52 @@ class _SignUpScreenState extends State<SignUpScreen> {
           side: const BorderSide(color: AppColors.primary, width: 2),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
         ),
-        onPressed: () {
-          firebaseServices.googleSignIn();
+        onPressed: () async {
+          try {
+            bool isSignedIn = await firebaseServices.googleSignIn();
+
+            if (isSignedIn) {
+              final user = auth.currentUser;
+              final name = user?.displayName ?? "Google User";
+              final email = user?.email ?? "unknown@gmail.com";
+
+              // Call your backend API
+              final backendAuthSuccess = await firebaseServices
+                  .handleGoogleBackendAuth(name, email);
+
+              if (backendAuthSuccess) {
+                Get.offAllNamed(AppRoutes.introScreen);
+                showSimpleSnackBar(
+                  context,
+                  "Signed in successfully!",
+                  bgColor: Colors.green,
+                  textColor: Colors.white,
+                );
+              } else {
+                showSimpleSnackBar(
+                  context,
+                  "Failed to connect with server",
+                  bgColor: Colors.red,
+                  textColor: Colors.white,
+                );
+              }
+            } else {
+              showSimpleSnackBar(
+                context,
+                "Google Sign-In canceled",
+                bgColor: Colors.red,
+                textColor: Colors.white,
+              );
+            }
+          } catch (e) {
+            print("Google Sign-In error: $e");
+            showSimpleSnackBar(
+              context,
+              "Something went wrong. Try again!",
+              bgColor: Colors.red,
+              textColor: Colors.white,
+            );
+          }
         },
         icon: Image.asset(AssetPath.googleLogo, width: 25),
         label: const Text("Sign Up with Google"),

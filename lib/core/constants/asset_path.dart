@@ -28,4 +28,6 @@ class AssetPath {
   static const String editIcon = 'assets/edit.png';
   static const String smileIcon = 'assets/smileIcon.png';
   static const String sleepIcon = 'assets/sleepIcon.png';
+  static const String defaultProfile = 'assets/profile_pic.png';
+  static const String pencileIcon = 'assets/pencil-edit.png';
 }

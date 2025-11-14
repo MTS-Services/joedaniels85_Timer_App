@@ -28,6 +28,7 @@ class App extends StatelessWidget {
             textTheme: _buildTextTheme(),
             inputDecorationTheme: _buildInputDecorationTheme(),
             elevatedButtonTheme: _buildElevatedButtonThemeData(),
+            dialogTheme: DialogThemeData(backgroundColor: Colors.white),
           ),
         );
       },
