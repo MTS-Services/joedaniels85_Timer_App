@@ -23,7 +23,7 @@ class WeeklyMinutesBarChart extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final maxMin = (minutes.reduce((a, b) => a > b ? a : b)).toDouble();
-    final visualMax = 100.0; // Maximum visual bar height (100%)
+    final visualMax = 100.0;
 
     return Container(
       padding: EdgeInsets.all(16.w),

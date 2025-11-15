@@ -8,6 +8,9 @@ class TimerController extends GetxController {
   var activityId = "".obs;
   var isRunning = false.obs;
 
+  // ✅ Selected minutes for UI button selection
+  var selectedMinutes = 0.obs;
+
   Timer? _timer;
 
   /// Start Timer & Save activityId
@@ -32,11 +35,13 @@ class TimerController extends GetxController {
     });
   }
 
+  /// Reset timer for given minutes
   void resetTimer(int minutes) {
     stopTimer();
     remainingSeconds.value = minutes * 60;
     elapsedSeconds.value = 0;
     isRunning.value = false;
+    selectedMinutes.value = minutes; // ✅ Update selection
   }
 
   /// Stop timer

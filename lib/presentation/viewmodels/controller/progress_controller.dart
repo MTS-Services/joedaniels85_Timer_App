@@ -43,7 +43,7 @@ class UserProgressController extends GetxController {
         progressResponse.value = parsed;
         todayActivities.value = parsed.data?.today?.activities ?? [];
         categoryBreakdownList.value = parsed.data?.categoryBreakdown ?? [];
-        overallStats.value = parsed.data?.overall; // ✅ set overall data
+        overallStats.value = parsed.data?.overall;
 
         print("Overall Stats: ${overallStats.value}");
       } else {

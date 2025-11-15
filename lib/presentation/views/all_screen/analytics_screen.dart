@@ -11,15 +11,22 @@ import '../../widgets/start_card.dart';
 import '../../widgets/status_card.dart';
 import '../../widgets/weekly_minutes_bar_chart.dart';
 
-class AnalyticsScreen extends StatelessWidget {
-  AnalyticsScreen({super.key});
+class AnalyticsScreen extends StatefulWidget {
+  const AnalyticsScreen({super.key});
 
-  final AchievementController achievementController = Get.put(
-    AchievementController(),
-  );
-  final UserProgressController progressController = Get.put(
-    UserProgressController(),
-  );
+  @override
+  State<AnalyticsScreen> createState() => _AnalyticsScreenState();
+}
+
+class _AnalyticsScreenState extends State<AnalyticsScreen> {
+  final AchievementController achievementController = Get.put(AchievementController());
+  final UserProgressController progressController = Get.put(UserProgressController());
+
+  @override
+  void initState() {
+    super.initState();
+    _initialFetch();
+  }
 
   void _initialFetch() {
     progressController.fetchUserProgress();
@@ -28,8 +35,6 @@ class AnalyticsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    _initialFetch();
-
     return Scaffold(
       body: SafeArea(
         child: RefreshIndicator(
@@ -53,9 +58,10 @@ class AnalyticsScreen extends StatelessWidget {
                 SizedBox(height: 10.h),
                 Text(
                   "Last 7 days",
-                  style: Theme.of(
-                    context,
-                  ).textTheme.bodySmall?.copyWith(fontSize: 14.sp),
+                  style: Theme.of(context)
+                      .textTheme
+                      .bodySmall
+                      ?.copyWith(fontSize: 14.sp),
                 ),
                 SizedBox(height: 10.h),
 
@@ -73,12 +79,17 @@ class AnalyticsScreen extends StatelessWidget {
                 SizedBox(height: 10.h),
 
                 Obx(() {
+                  if (progressController.isLoading.value) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
+
                   final entries = progressController.todayActivities;
-                  if (entries.isEmpty)
+                  if (entries.isEmpty) {
                     return Text(
                       "No activities yet",
                       style: TextStyle(fontSize: 14.sp),
                     );
+                  }
                   return buildWeeklyMinutesChart(context, entries);
                 }),
 
@@ -135,6 +146,10 @@ class AnalyticsScreen extends StatelessWidget {
 
                 /// Status Card
                 Obx(() {
+                  if (progressController.isLoading.value) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
+
                   final entries = progressController.todayActivities;
                   if (entries.isEmpty)
                     return Text(
@@ -154,6 +169,10 @@ class AnalyticsScreen extends StatelessWidget {
   /// Total Time + Today %
   Widget _buildRow() {
     return Obx(() {
+      if (progressController.isLoading.value) {
+        return const Center(child: CircularProgressIndicator());
+      }
+
       final backendMinutes = ((progressController.progressResponse.value?.data?.overall?.totalDurationMinutes ?? 0) / 60).round();
 
       final todayMinutes = progressController.todayActivities.fold<int>(
@@ -217,10 +236,7 @@ class AnalyticsScreen extends StatelessWidget {
     });
   }
 
-  Widget buildWeeklyMinutesChart(
-      BuildContext context,
-      List<ActivityEntry> entries,
-      ) {
+  Widget buildWeeklyMinutesChart(BuildContext context, List<ActivityEntry> entries) {
     final now = DateTime.now();
     final startOfWeek = now.subtract(Duration(days: now.weekday % 7));
     final last7Days = List.generate(
