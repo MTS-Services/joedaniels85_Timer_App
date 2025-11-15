@@ -12,9 +12,12 @@ import '../auth_screen/sign_in_screen.dart';
 class ProfileScreen extends StatelessWidget {
   ProfileScreen({super.key});
 
-  final UserProgressController userProgressController = Get.put(UserProgressController());
-  final UserProfileController profileController = Get.put(UserProfileController());
-  final ProfileImageController imageController = Get.put(ProfileImageController());
+  final UserProgressController userProgressController =
+  Get.put(UserProgressController());
+  final UserProfileController profileController =
+  Get.put(UserProfileController());
+  final ProfileImageController imageController =
+  Get.put(ProfileImageController());
   final FirebaseServices firebaseServices = FirebaseServices();
 
   @override
@@ -28,12 +31,14 @@ class ProfileScreen extends StatelessWidget {
             Center(
               child: Column(
                 children: [
+                  // ---------------- PROFILE AVATAR ----------------
                   Obx(() {
                     final file = imageController.imageFile.value;
-                    final rawProfilePic = profileController.profileList.value?.profilePic;
+                    final rawProfilePic =
+                        profileController.profileList.value?.profilePic;
 
-                    // Remove extra quotes and trim
-                    final profilePic = rawProfilePic?.replaceAll("'", "").trim() ?? "";
+                    final profilePic =
+                        rawProfilePic?.replaceAll("'", "").trim() ?? "";
 
                     ImageProvider? imageProvider;
 
@@ -59,9 +64,11 @@ class ProfileScreen extends StatelessWidget {
                             height: 120,
                             decoration: BoxDecoration(
                               shape: BoxShape.circle,
-                              border: Border.all(color: Colors.grey, width: 2),
+                              border:
+                              Border.all(color: Colors.grey, width: 2),
                               image: DecorationImage(
-                                image: imageProvider ?? Image.asset(AssetPath.defaultProfile).image,
+                                image: imageProvider ??
+                                    Image.asset(AssetPath.defaultProfile).image,
                                 fit: BoxFit.cover,
                               ),
                             ),
@@ -75,7 +82,8 @@ class ProfileScreen extends StatelessWidget {
                             child: CircleAvatar(
                               radius: 14,
                               backgroundColor: Colors.blue,
-                              child: Icon(Icons.camera_alt, size: 16, color: Colors.white),
+                              child: Icon(Icons.camera_alt,
+                                  size: 16, color: Colors.white),
                             ),
                           ),
                         ),
@@ -87,16 +95,17 @@ class ProfileScreen extends StatelessWidget {
 
                   Text(
                     "Activities",
-                    style: TextStyle(fontSize: 18.sp, fontWeight: FontWeight.bold),
+                    style: TextStyle(
+                        fontSize: 18.sp, fontWeight: FontWeight.bold),
                   ),
+
                   SizedBox(height: 10.h),
 
+                  // ---------- Member since ----------
                   Obx(() {
-                    final name = profileController.profileList.value?.name ?? "Loading...";
-                    final year = userProgressController.todayActivities.isNotEmpty
-                        ? userProgressController.todayActivities.first.createdAt?.year ??
-                        DateTime.now().year
-                        : DateTime.now().year;
+                    final name =
+                        profileController.profileList.value?.name ?? "Loading...";
+                    final year = DateTime.now().year;
 
                     return Text(
                       "Member since $name $year",
@@ -155,23 +164,25 @@ class ProfileScreen extends StatelessWidget {
   // -------------------- Recent Achievements --------------------
   Widget _recentAchievements(BuildContext context) {
     return Obx(() {
-      final stats = userProgressController.overallStats.value;
-      final progress = userProgressController.progressResponse.value?.data;
+      final overall = userProgressController.overallSummary.value;
+      final streak = userProgressController.streakCurrent.value;
 
-      int totalSessions = stats?.completedActivities ?? 0;
-      int streak = progress?.currentStreak ?? 0;
-      int totalHours = stats?.totalActivities ?? 0;
+      int totalSessions = overall?.totalActivities ?? 0;
+      int totalHours = overall?.screenFreeTimeHours ?? 0;
 
       List<Widget> achievements = [];
 
       if (totalSessions >= 1) {
-        achievements.add(_buildCard(context, "First Step", "Completed your first session"));
+        achievements.add(_buildCard(
+            context, "First Step", "Completed your first session"));
       }
       if (streak >= 3) {
-        achievements.add(_buildCard(context, "3 Day Streak", "Maintained focus for 3 days"));
+        achievements.add(_buildCard(
+            context, "3 Day Streak", "Maintained focus for 3 days"));
       }
       if (totalHours >= 1) {
-        achievements.add(_buildCard(context, "Hour Master", "Completed a 1-hour session"));
+        achievements.add(_buildCard(
+            context, "Hour Master", "Completed a 1-hour session"));
       }
       if (achievements.isEmpty) {
         achievements.add(
@@ -204,10 +215,8 @@ class ProfileScreen extends StatelessWidget {
         ),
         subtitle: Text(
           subText,
-          style: Theme.of(context)
-              .textTheme
-              .bodySmall!
-              .copyWith(fontSize: 14.sp),
+          style:
+          Theme.of(context).textTheme.bodySmall!.copyWith(fontSize: 14.sp),
         ),
       ),
     );
@@ -222,34 +231,34 @@ class ProfileScreen extends StatelessWidget {
         borderRadius: BorderRadius.circular(15.r),
       ),
       child: Obx(() {
+        final overall = userProgressController.overallSummary.value;
+
         return Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Flexible(
               child: _statusColumn(
-                value: userProgressController.overallStats.value?.completedActivities ?? 0,
+                value: overall?.totalActivities ?? 0,
                 label: "Total Sessions",
               ),
             ),
             Flexible(
               child: _statusColumn(
-                value: userProgressController.overallStats.value?.totalActivities ?? 0,
-                label: "Screen \nfree time",
+                value: overall?.screenFreeTimeHours ?? 0,
+                label: "Screen\nFree Time",
                 suffix: "h",
               ),
             ),
             Flexible(
               child: _statusColumn(
-                value: userProgressController.progressResponse.value?.data?.currentStreak ?? 0,
-                label: "Current Streak",
+                value: userProgressController.streakCurrent.value,
+                label: "Current\nStreak",
               ),
             ),
             Flexible(
               child: _statusColumn(
-                value: userProgressController.categoryBreakdownList.isNotEmpty
-                    ? userProgressController.categoryBreakdownList.first.count ?? 0
-                    : 0,
-                label: "Longest Streak",
+                value: userProgressController.streakLongest.value,
+                label: "Longest\nStreak",
               ),
             ),
           ],

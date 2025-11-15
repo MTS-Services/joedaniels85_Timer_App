@@ -3,26 +3,31 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../core/constants/app_colors.dart';
 
-class WeeklyMinutesBarChart extends StatelessWidget {
+class DayWiseMinutesBarChart extends StatelessWidget {
   final List<int> minutes;
+  final List<String> days; // <-- changed here
   final Color barColor;
   final Color backgroundColor;
   final double barWidth;
   final double borderRadius;
-  const WeeklyMinutesBarChart({
+
+  const DayWiseMinutesBarChart({
     super.key,
     required this.minutes,
+    required this.days, // <-- required
     this.barColor = AppColors.primary,
     this.backgroundColor = AppColors.secondary,
     this.barWidth = 18,
     this.borderRadius = 14,
-  }) : assert(minutes.length == 7, 'Minutes list must have 7 values (Sun-Sat)');
-
-  static const _days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+  });
 
   @override
   Widget build(BuildContext context) {
-    final maxMin = (minutes.reduce((a, b) => a > b ? a : b)).toDouble();
+    if (minutes.isEmpty || days.isEmpty) {
+      return const Center(child: Text("No data found"));
+    }
+
+    final maxMin = minutes.reduce((a, b) => a > b ? a : b).toDouble();
     final visualMax = 100.0;
 
     return Container(
@@ -60,15 +65,15 @@ class WeeklyMinutesBarChart extends StatelessWidget {
               bottomTitles: AxisTitles(
                 sideTitles: SideTitles(
                   showTitles: true,
-                  reservedSize: 36.h,
+                  reservedSize: 36,
                   getTitlesWidget: (value, meta) {
-                    final i = value.toInt();
-                    if (i < 0 || i >= _days.length) return const SizedBox();
+                    final index = value.toInt();
+                    if (index < 0 || index >= minutes.length) return const SizedBox();
+
                     return Column(
-                      mainAxisSize: MainAxisSize.min,
                       children: [
                         Text(
-                          _days[i],
+                          days[index],
                           style: TextStyle(
                             fontSize: 10.sp,
                             color: Colors.black87,
@@ -76,7 +81,7 @@ class WeeklyMinutesBarChart extends StatelessWidget {
                         ),
                         SizedBox(height: 2.h),
                         Text(
-                          '${minutes[i]} min',
+                          '${minutes[index]} min',
                           style: TextStyle(
                             fontSize: 8.sp,
                             color: Colors.black54,
@@ -90,13 +95,12 @@ class WeeklyMinutesBarChart extends StatelessWidget {
               ),
             ),
             barGroups: List.generate(minutes.length, (i) {
-              final visualValue = (minutes[i] / maxMin * visualMax).clamp(0, visualMax);
               return BarChartGroupData(
                 x: i,
                 barsSpace: 4.w,
                 barRods: [
                   BarChartRodData(
-                    toY: visualValue.toDouble(),
+                    toY: minutes[i].toDouble(), // <-- make the bar height dynamic
                     borderRadius: BorderRadius.vertical(
                       top: Radius.circular(borderRadius.r),
                     ),

@@ -16,7 +16,7 @@ class TimerScreen extends StatelessWidget {
   );
 
   Future<void> _onRefresh() async {
-    await userProgressController.fetchUserProgress();
+    await userProgressController.fetchProgress(); // FIXED
   }
 
   @override
@@ -37,11 +37,6 @@ class TimerScreen extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // CustomTimePicker(
-                    //   onTimeSelected: (time) {
-                    //     print("Selected Time: ${time.format(context)}");
-                    //   },
-                    // ),
                     SizedBox(height: 10.h),
                     _buildStartCard(),
                     SizedBox(height: 15.h),
@@ -63,18 +58,9 @@ class TimerScreen extends StatelessWidget {
   StartCard _buildStartCard() {
     return StartCard(
       titleSpans: [
-        TextSpan(
-          text: "Ready ",
-          style: TextStyle(fontSize: 16.sp),
-        ),
-        TextSpan(
-          text: "to \n",
-          style: TextStyle(fontSize: 16.sp),
-        ),
-        TextSpan(
-          text: "start",
-          style: TextStyle(fontSize: 16.sp),
-        ),
+        TextSpan(text: "Ready ", style: TextStyle(fontSize: 16.sp)),
+        TextSpan(text: "to \n", style: TextStyle(fontSize: 16.sp)),
+        TextSpan(text: "start", style: TextStyle(fontSize: 16.sp)),
       ],
       circleImage: AssetPath.circle,
       centerIcon: AssetPath.clock,
@@ -83,6 +69,66 @@ class TimerScreen extends StatelessWidget {
       onButtonTap: () {
         Get.toNamed(AppRoutes.timerFocusScreen);
       },
+    );
+  }
+
+  Widget _buildRow() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        /// CURRENT STREAK CARD
+        Obx(() {
+          final streak =
+              userProgressController.progress.value?.data.streaks.current ?? 0;
+
+          return Flexible(
+            child: StartCard(
+              vPadding: 0,
+              showButton: false,
+              centerIcon: AssetPath.fire,
+              size: 60.w,
+              titleSpans: [
+                TextSpan(
+                  text: "$streak",
+                  style: TextStyle(fontSize: 28.sp, fontWeight: FontWeight.bold),
+                ),
+                TextSpan(
+                  text: "\nStreak",
+                  style: TextStyle(fontSize: 16.sp),
+                ),
+              ],
+            ),
+          );
+        }),
+
+        SizedBox(width: 10.w),
+
+        /// OVERALL TOTAL DURATION
+        Obx(() {
+          final totalDuration =
+              userProgressController.overallSummary.value?.totalDurationMinutes ??
+                  0;
+
+          return Flexible(
+            child: StartCard(
+              vPadding: 0,
+              showButton: false,
+              centerIcon: AssetPath.target,
+              size: 60.w,
+              titleSpans: [
+                TextSpan(
+                  text: "${totalDuration}m",
+                  style: TextStyle(fontSize: 28.sp, fontWeight: FontWeight.bold),
+                ),
+                TextSpan(
+                  text: "\nFocus",
+                  style: TextStyle(fontSize: 16.sp),
+                ),
+              ],
+            ),
+          );
+        }),
+      ],
     );
   }
 
@@ -102,9 +148,7 @@ class TimerScreen extends StatelessWidget {
               ActionIcon(
                 icon: Icons.arrow_forward_ios_outlined,
                 color: Colors.green,
-                onTap: () {
-                  print("Checked!");
-                },
+                onTap: () {},
               ),
             ],
           );
@@ -112,71 +156,5 @@ class TimerScreen extends StatelessWidget {
       ),
     );
   }
-
-  Widget _buildRow() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Obx(() {
-          final streak =
-              userProgressController
-                  .progressResponse
-                  .value
-                  ?.data
-                  ?.currentStreak ??
-              0;
-          return Flexible(
-            child: StartCard(
-              vPadding: 0,
-              showButton: false,
-              centerIcon: AssetPath.fire,
-              size: 60.w,
-              titleSpans: [
-                TextSpan(
-                  text: "$streak",
-                  style: TextStyle(
-                    fontSize: 28.sp,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                TextSpan(
-                  text: "\nStreak",
-                  style: TextStyle(fontSize: 16.sp),
-                ),
-              ],
-              onButtonTap: () {},
-            ),
-          );
-        }),
-        SizedBox(width: 10.w),
-        Obx(() {
-          final totalDuration =
-              userProgressController.overallStats.value?.totalDurationMinutes ??
-              0;
-          return Flexible(
-            child: StartCard(
-              vPadding: 0.r,
-              showButton: false,
-              centerIcon: AssetPath.target,
-              size: 60.w,
-              titleSpans: [
-                TextSpan(
-                  text: "${totalDuration}m",
-                  style: TextStyle(
-                    fontSize: 28.sp,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                TextSpan(
-                  text: "\nFocus",
-                  style: TextStyle(fontSize: 16.sp),
-                ),
-              ],
-              onButtonTap: () {},
-            ),
-          );
-        }),
-      ],
-    );
-  }
 }
+

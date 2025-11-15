@@ -1,35 +1,47 @@
-import 'package:get/get_rx/src/rx_types/rx_types.dart';
-import 'package:get/get_state_manager/src/simple/get_controllers.dart';
+import 'package:get/get.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
 import '../../../core/constants/urls.dart';
 import '../../../core/network/network_caller.dart';
-import '../../../data/models/screenmodel/progress_pesponse_model.dart';
+import '../../../data/models/screenmodel/progress_response_model.dart';
 
 class UserProgressController extends GetxController {
   var isLoading = false.obs;
-  var progressResponse = Rxn<ProgressResponse>();
-  var todayActivities = <ActivityEntry>[].obs;
-  var categoryBreakdownList = <CategoryBreakdown>[].obs;
-  var overallStats = Rxn<Overall>();
+
+  /// Full API response model
+  var progress = Rxn<ProgressResponse>();
+
+  /// Weekly Progress list
+  var weeklyProgress = <WeeklyProgress>[].obs;
+
+
+  /// Summary parts
+  var todaySummary = Rxn<SummaryStats>();
+  var last7Summary = Rxn<SummaryStats>();
+  var last30Summary = Rxn<SummaryStats>();
+  var overallSummary = Rxn<Overall>();
+  var dailyProgress = Rxn<DailyProgress>();
+
+  /// Streaks
+  var streakCurrent = 0.obs;
+  var streakLongest = 0.obs;
 
   final NetworkCaller networkCaller = NetworkCaller();
 
   @override
   void onInit() {
     super.onInit();
-    fetchUserProgress();
+    fetchProgress();
   }
 
-  Future<void> fetchUserProgress() async {
-    isLoading.value = true;
+  Future<void> fetchProgress() async {
     try {
+      isLoading.value = true;
+
       SharedPreferences prefs = await SharedPreferences.getInstance();
       String? token = prefs.getString('auth_token');
 
       if (token == null || token.isEmpty) {
-        print("No API token found. Please login first.");
-        isLoading.value = false;
+        print("Token not found");
         return;
       }
 
@@ -38,16 +50,31 @@ class UserProgressController extends GetxController {
         token: token,
       );
 
-      if (response != null && response['success'] == true) {
+      if (response != null && response["success"] == true) {
         final parsed = ProgressResponse.fromJson(response);
-        progressResponse.value = parsed;
-        todayActivities.value = parsed.data?.today?.activities ?? [];
-        categoryBreakdownList.value = parsed.data?.categoryBreakdown ?? [];
-        overallStats.value = parsed.data?.overall;
+        progress.value = parsed;
 
-        print("Overall Stats: ${overallStats.value}");
+        /// Weekly Progress
+        weeklyProgress.value = parsed.data.weeklyProgress;
+
+        /// Summary
+        todaySummary.value = parsed.data.summary.today;
+        last7Summary.value = parsed.data.summary.last7Days;
+        last30Summary.value = parsed.data.summary.last30Days;
+        overallSummary.value = parsed.data.summary.overall;
+
+        /// Daily Progress (first entry for today, if available)
+        dailyProgress.value = parsed.data.dailyProgress.isNotEmpty
+            ? parsed.data.dailyProgress.first
+            : null;
+
+        /// Streaks
+        streakCurrent.value = parsed.data.streaks.current;
+        streakLongest.value = parsed.data.streaks.longest;
+
+        print("Progress loaded successfully");
       } else {
-        print("API Error or no data: $response");
+        print("API Error: $response");
       }
     } catch (e) {
       print("Error fetching progress: $e");
@@ -55,4 +82,5 @@ class UserProgressController extends GetxController {
       isLoading.value = false;
     }
   }
+
 }
