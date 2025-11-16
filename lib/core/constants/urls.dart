@@ -13,3 +13,4 @@ class Urls {
   static String submitDuration= '$baseUrl/user/activities';
   static String userProfile= '$baseUrl/user/profile';
 }
+// /api/user/activities

@@ -221,11 +221,25 @@ class WeeklyProgress {
     required this.duration,
   });
 
-  factory WeeklyProgress.fromJson(Map<String, dynamic> json) =>
-      WeeklyProgress(
-        date: json["date"],
-        duration: json["duration"],
-      );
+  factory WeeklyProgress.fromJson(Map<String, dynamic> json) {
+    return WeeklyProgress(
+      date: json["date"],
+      duration: json["duration"],
+    );
+  }
+
+  /// Day name  (Sun, Mon...)
+  String get dayName {
+    final dt = DateTime.parse(date);
+    const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+    return days[dt.weekday % 7];
+  }
+
+  /// Day slot index  (Sun=0 → Sat=6)
+  int get dayIndex {
+    final dt = DateTime.parse(date);
+    return dt.weekday % 7;
+  }
 }
 
 // ---------------- SUMMARY -----------------

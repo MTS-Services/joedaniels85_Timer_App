@@ -5,20 +5,22 @@ import '../../core/constants/app_colors.dart';
 
 class DayWiseMinutesBarChart extends StatelessWidget {
   final List<int> minutes;
-  final List<String> days; // <-- changed here
+  final List<String> days;
   final Color barColor;
   final Color backgroundColor;
   final double barWidth;
   final double borderRadius;
+  final int maxMinutePossible; // maximum minutes per day for full bar
 
   const DayWiseMinutesBarChart({
     super.key,
     required this.minutes,
-    required this.days, // <-- required
+    required this.days,
     this.barColor = AppColors.primary,
     this.backgroundColor = AppColors.secondary,
     this.barWidth = 18,
     this.borderRadius = 14,
+    this.maxMinutePossible = 60, // default max minutes
   });
 
   @override
@@ -27,8 +29,8 @@ class DayWiseMinutesBarChart extends StatelessWidget {
       return const Center(child: Text("No data found"));
     }
 
-    final maxMin = minutes.reduce((a, b) => a > b ? a : b).toDouble();
-    final visualMax = 100.0;
+    // 🔥 Fixed bar height
+    final maxBarHeight = 100.0;
 
     return Container(
       padding: EdgeInsets.all(16.w),
@@ -51,7 +53,10 @@ class DayWiseMinutesBarChart extends StatelessWidget {
             gridData: const FlGridData(show: false),
             borderData: FlBorderData(show: false),
             barTouchData: BarTouchData(enabled: false),
-            maxY: visualMax,
+
+            // 🔥 Fixed bar height for background
+            maxY: maxBarHeight,
+
             titlesData: FlTitlesData(
               leftTitles: const AxisTitles(
                 sideTitles: SideTitles(showTitles: false),
@@ -68,7 +73,9 @@ class DayWiseMinutesBarChart extends StatelessWidget {
                   reservedSize: 36,
                   getTitlesWidget: (value, meta) {
                     final index = value.toInt();
-                    if (index < 0 || index >= minutes.length) return const SizedBox();
+                    if (index < 0 || index >= minutes.length) {
+                      return const SizedBox();
+                    }
 
                     return Column(
                       children: [
@@ -94,13 +101,18 @@ class DayWiseMinutesBarChart extends StatelessWidget {
                 ),
               ),
             ),
+
             barGroups: List.generate(minutes.length, (i) {
+              // 🔥 progress fraction for fixed bar
+              final progressFraction =
+                  (minutes[i] / maxMinutePossible).clamp(0.0, 1.0) * maxBarHeight;
+
               return BarChartGroupData(
                 x: i,
                 barsSpace: 4.w,
                 barRods: [
                   BarChartRodData(
-                    toY: minutes[i].toDouble(), // <-- make the bar height dynamic
+                    toY: progressFraction,
                     borderRadius: BorderRadius.vertical(
                       top: Radius.circular(borderRadius.r),
                     ),
@@ -108,7 +120,7 @@ class DayWiseMinutesBarChart extends StatelessWidget {
                     color: barColor,
                     backDrawRodData: BackgroundBarChartRodData(
                       show: true,
-                      toY: visualMax,
+                      toY: maxBarHeight,
                       color: backgroundColor,
                     ),
                   ),

@@ -4,7 +4,6 @@ import 'package:get/get.dart';
 import 'package:joedaniels85_timer_app/core/constants/asset_path.dart';
 import '../../../routes/app_route.dart';
 import '../../viewmodels/controller/progress_controller.dart';
-import '../../widgets/custom_time_ticker.dart';
 import '../../widgets/start_card.dart';
 import '../../widgets/task_card.dart';
 
@@ -16,7 +15,7 @@ class TimerScreen extends StatelessWidget {
   );
 
   Future<void> _onRefresh() async {
-    await userProgressController.fetchProgress(); // FIXED
+    await userProgressController.fetchProgress();
   }
 
   @override
@@ -76,7 +75,6 @@ class TimerScreen extends StatelessWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        /// CURRENT STREAK CARD
         Obx(() {
           final streak =
               userProgressController.progress.value?.data.streaks.current ?? 0;
@@ -103,12 +101,10 @@ class TimerScreen extends StatelessWidget {
 
         SizedBox(width: 10.w),
 
-        /// OVERALL TOTAL DURATION
         Obx(() {
           final totalDuration =
-              userProgressController.overallSummary.value?.totalDurationMinutes ??
+              userProgressController.overallSummary.value!.screenFreeTimeHours??
                   0;
-
           return Flexible(
             child: StartCard(
               vPadding: 0,
@@ -117,7 +113,7 @@ class TimerScreen extends StatelessWidget {
               size: 60.w,
               titleSpans: [
                 TextSpan(
-                  text: "${totalDuration}m",
+                  text: "${totalDuration}h",
                   style: TextStyle(fontSize: 28.sp, fontWeight: FontWeight.bold),
                 ),
                 TextSpan(

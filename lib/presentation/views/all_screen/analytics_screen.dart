@@ -72,33 +72,18 @@ class AnalyticsScreen extends StatelessWidget {
 
                 SizedBox(height: 10.h),
 
-                /// ✔ FIXED WEEKLY PROGRESS CHART
                 Obx(() {
-                  final dp = progressController.dailyProgress.value;
-
-                  if (dp == null) {
-                    return const Text("No daily progress yet");
-                  }
-
-                  // All days of the week
-                  final allDays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-
-
-                  final minutesList = List<int>.filled(7, 0);
-
-                  final dayIndex = allDays.indexWhere((d) =>
-                  d.toLowerCase() == dp.dayName.substring(0, 3).toLowerCase());
-
-                  if (dayIndex != -1) {
-                    minutesList[dayIndex] = dp.stats.total ?? 0;
+                  if (progressController.weeklyProgress.isEmpty) {
+                    return const Text("No Data");
                   }
 
                   return DayWiseMinutesBarChart(
-                    minutes: minutesList,
+                    minutes: progressController.durationList,
+                    maxMinutePossible: 480,
+                    days: progressController.dayList,
                     barColor: Colors.teal,
                     backgroundColor: Colors.grey.shade300,
                     barWidth: 15.w,
-                    days: allDays,
                   );
                 }),
 
@@ -155,13 +140,14 @@ class AnalyticsScreen extends StatelessWidget {
                 Obx(() {
                   final dp = progressController.dailyProgress.value;
 
+
                   if (dp == null || dp.activities.isEmpty) {
                     return Text("No activities yet");
                   }
 
                   return StatusCard(
                     dayName: dp.dayName ?? "",
-                    minutes: "${dp.stats.total ?? 0} min",
+                    minutes: "${(dp.stats.totalDuration).floor() ?? 0} min",
                     status: dp.activities.first.status ?? "Unknown",
                     statusColor: Colors.green,
                   );
@@ -178,12 +164,10 @@ class AnalyticsScreen extends StatelessWidget {
   Widget _buildRow() {
     return Obx(() {
       final dp = progressController.dailyProgress.value;
-
+      final dp2 = progressController.last7Summary.value;
       if (dp == null) {
         return SizedBox.shrink();
       }
-
-      final totalMinutes = dp.stats.total ?? 0;
       final todayMinutes = dp.stats.totalDuration ?? 0;
 
       return Row(
@@ -195,7 +179,7 @@ class AnalyticsScreen extends StatelessWidget {
               size: 60.w,
               titleSpans: [
                 TextSpan(
-                  text: "${totalMinutes}m\n",
+                  text: "${dp2!.totalDuration}m\n",
                   style: TextStyle(
                     fontSize: 28.sp,
                     fontWeight: FontWeight.bold,
@@ -215,7 +199,7 @@ class AnalyticsScreen extends StatelessWidget {
               size: 60.w,
               titleSpans: [
                 TextSpan(
-                  text: "$todayMinutes\n",
+                  text: "${(todayMinutes / 60).floor()}%\n",
                   style: TextStyle(
                     fontSize: 28.sp,
                     fontWeight: FontWeight.bold,
@@ -231,4 +215,5 @@ class AnalyticsScreen extends StatelessWidget {
       );
     });
   }
+
 }

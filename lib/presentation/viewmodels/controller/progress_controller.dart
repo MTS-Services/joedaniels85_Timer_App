@@ -13,7 +13,6 @@ class UserProgressController extends GetxController {
   /// Weekly Progress list
   var weeklyProgress = <WeeklyProgress>[].obs;
 
-
   /// Summary parts
   var todaySummary = Rxn<SummaryStats>();
   var last7Summary = Rxn<SummaryStats>();
@@ -54,8 +53,9 @@ class UserProgressController extends GetxController {
         final parsed = ProgressResponse.fromJson(response);
         progress.value = parsed;
 
-        /// Weekly Progress
-        weeklyProgress.value = parsed.data.weeklyProgress;
+        /// Weekly Progress (sort Sun → Sat)
+        weeklyProgress.value = parsed.data.weeklyProgress
+          ..sort((a, b) => a.dayIndex.compareTo(b.dayIndex));
 
         /// Summary
         todaySummary.value = parsed.data.summary.today;
@@ -63,7 +63,7 @@ class UserProgressController extends GetxController {
         last30Summary.value = parsed.data.summary.last30Days;
         overallSummary.value = parsed.data.summary.overall;
 
-        /// Daily Progress (first entry for today, if available)
+        /// Daily Progress
         dailyProgress.value = parsed.data.dailyProgress.isNotEmpty
             ? parsed.data.dailyProgress.first
             : null;
@@ -83,4 +83,18 @@ class UserProgressController extends GetxController {
     }
   }
 
+
+  List<String> get dayList {
+    return const ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+  }
+
+  List<int> get durationList {
+    List<int> fixed = List.filled(7, 0);
+
+    for (var item in weeklyProgress) {
+      fixed[item.dayIndex] = item.duration;
+    }
+
+    return fixed;
+  }
 }

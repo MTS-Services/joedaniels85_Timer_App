@@ -67,6 +67,7 @@ class _PauseActiveScreenState extends State<PauseActiveScreen>
             final durationModel = DurationModel(
               activityId: activity.id,
               duration: timerController.getElapsedSeconds(),
+              status: "COMPLETED",
             );
 
             bool success =
@@ -104,9 +105,12 @@ class _PauseActiveScreenState extends State<PauseActiveScreen>
     super.dispose();
   }
 
-  String getRemainingMinutes() {
-    final minutes = (timerController.remainingSeconds.value / 60).ceil();
-    return minutes.toString();
+  /// ⏳ Remaining time as MM:SS
+  String getRemainingTime() {
+    final totalSeconds = timerController.remainingSeconds.value;
+    final minutes = totalSeconds ~/ 60;
+    final seconds = totalSeconds % 60;
+    return "${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')} min left";
   }
 
   @override
@@ -121,6 +125,7 @@ class _PauseActiveScreenState extends State<PauseActiveScreen>
           return Stack(
             alignment: Alignment.center,
             children: [
+              // Ripple + dashed circle animation
               AnimatedBuilder(
                 animation: Listenable.merge([_rippleCtrl, _dashShiftCtrl]),
                 builder: (context, _) {
@@ -134,9 +139,9 @@ class _PauseActiveScreenState extends State<PauseActiveScreen>
                 },
               ),
 
-              /// ⏳ Time text
+              // Timer text
               Text(
-                "Your Pause\n${getRemainingMinutes()} min left",
+                "Your Pause\n${getRemainingTime()}",
                 style: TextStyle(
                   color: Colors.white,
                   fontSize: 18.sp,
@@ -145,7 +150,7 @@ class _PauseActiveScreenState extends State<PauseActiveScreen>
                 textAlign: TextAlign.center,
               ),
 
-              /// 🛑 Stop button (manual stop option)
+              // Stop button
               Positioned(
                 bottom: 90.h,
                 child: SizedBox(
@@ -190,6 +195,7 @@ class _PauseActiveScreenState extends State<PauseActiveScreen>
                       final durationModel = DurationModel(
                         activityId: activity.id,
                         duration: timerController.getElapsedSeconds(),
+                        status: "COMPLETED",
                       );
 
                       bool success = await durationController
